@@ -1,3 +1,4 @@
+import json
 import os
 from openai import AsyncOpenAI
 
@@ -6,73 +7,109 @@ client = AsyncOpenAI(
     api_key=os.environ.get("NVIDIA_NIM_API_KEY", ""),
 )
 
-MODEL = "meta/llama-3.3-70b-instruct"
+MODEL = "qwen/qwen3-coder-480b-a35b-instruct"
 
-SCHEMA_CONTEXT = """
-Tu es un assistant qui transforme des questions en français sur les données publiques françaises en requêtes SQL PostgreSQL.
-
-Voici le schéma de la base de données :
+SYSTEM_PROMPT = """Tu es un assistant data-journaliste français spécialisé dans l'analyse des données publiques.
+Tu as accès à une base PostgreSQL avec les tables suivantes :
 
 TABLE regions (code VARCHAR PK, nom VARCHAR)
 TABLE departements (code VARCHAR PK, nom VARCHAR, region_code VARCHAR FK→regions)
-TABLE elections (id SERIAL PK, scrutin VARCHAR, date DATE, niveau VARCHAR, code_geo VARCHAR, libelle_geo VARCHAR, inscrits INT, votants INT, exprimes INT, blancs INT, nuls INT, liste VARCHAR, nuance VARCHAR, voix INT, pct_voix_exprimes FLOAT, sieges INT)
+TABLE elections (id SERIAL PK, scrutin VARCHAR, date DATE, niveau VARCHAR ['region','departement'], code_geo VARCHAR, libelle_geo VARCHAR, inscrits INT, votants INT, exprimes INT, blancs INT, nuls INT, liste VARCHAR, nuance VARCHAR, voix INT, pct_voix_exprimes FLOAT, sieges INT)
   - UNIQUE(scrutin, niveau, code_geo, liste)
-  - scrutin: 'europeennes-2024'
-  - niveau: 'region' ou 'departement'
-  - nuance: LRN (RN), LENS (Renaissance), LFI, LVEC (Écologie), LLR (LR), LUG (PS/Place Publique), LREC (Reconquête), LCOM (PCF), LEXG, LEXD, LDIV, etc.
+  - scrutin disponible: 'europeennes-2024'
+  - nuances: LRN (RN), LENS (Renaissance/Macron), LFI (France Insoumise), LVEC (Écologie), LLR (LR), LUG (PS/Place Publique), LREC (Reconquête), LCOM (PCF), etc.
 TABLE energie (id SERIAL PK, date DATE UNIQUE, pic_consommation_mw INT, temperature_moyenne FLOAT, temperature_reference FLOAT)
   - Données nationales uniquement (pas par région)
   - Données journalières de 2013 à 2025
 
-Règles :
-- Génère UNIQUEMENT la requête SQL, sans explication, sans markdown, sans ```
-- Utilise uniquement SELECT (lecture seule)
-- LIMIT 50 par défaut sauf si la question demande un classement spécifique
-- Pour les pourcentages de participation, calcule : votants::numeric / NULLIF(inscrits, 0) * 100
-- Les données énergie sont nationales, pas liées aux régions/départements
-"""
+Utilise l'outil execute_sql pour requêter la base. Tu peux faire plusieurs requêtes pour explorer les données avant de répondre.
+Pour les pourcentages de participation : votants::numeric / NULLIF(inscrits, 0) * 100
+Réponds toujours en français, de manière factuelle avec des chiffres précis, en 2-5 phrases."""
 
-
-async def question_to_sql(question: str) -> str:
-    """Convert a natural language question to SQL."""
-    response = await client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": SCHEMA_CONTEXT},
-            {"role": "user", "content": question},
-        ],
-        max_tokens=500,
-        temperature=0,
-    )
-    sql = response.choices[0].message.content.strip()
-    # Clean up any markdown formatting the LLM might add
-    sql = sql.replace("```sql", "").replace("```", "").strip()
-    return sql
-
-
-async def summarize_results(question: str, sql: str, results: list[dict]) -> str:
-    """Generate a natural language summary of query results."""
-    results_preview = str(results[:20])
-    if len(results) > 20:
-        results_preview += f"\n... ({len(results)} résultats au total)"
-
-    response = await client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "Tu es un assistant data-journaliste français. "
-                    "Résume les résultats de cette requête de manière claire et concise, en 2-3 phrases. "
-                    "Utilise des chiffres précis. Sois factuel."
-                ),
+TOOLS = [{
+    "type": "function",
+    "function": {
+        "name": "execute_sql",
+        "description": "Exécute une requête SQL SELECT sur la base PostgreSQL des statistiques françaises. Retourne les résultats en JSON.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sql": {
+                    "type": "string",
+                    "description": "La requête SQL PostgreSQL (SELECT uniquement)"
+                }
             },
-            {
-                "role": "user",
-                "content": f"Question : {question}\nSQL : {sql}\nRésultats : {results_preview}",
-            },
-        ],
-        max_tokens=300,
-        temperature=0.3,
-    )
-    return response.choices[0].message.content.strip()
+            "required": ["sql"]
+        }
+    }
+}]
+
+MAX_ITERATIONS = 5
+
+
+async def run_agent(question: str, execute_sql_fn) -> dict:
+    """
+    Run an agentic loop: the LLM can call execute_sql multiple times
+    before producing a final answer.
+
+    Returns: {question, steps: [{sql, results}], answer}
+    """
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": question},
+    ]
+    steps = []
+
+    for _ in range(MAX_ITERATIONS):
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=messages,
+            tools=TOOLS,
+            tool_choice="auto",
+            max_tokens=1000,
+            temperature=0,
+        )
+
+        choice = response.choices[0]
+        message = choice.message
+
+        # If no tool calls, we have the final answer
+        if not message.tool_calls:
+            return {
+                "question": question,
+                "steps": steps,
+                "answer": message.content or "Pas de réponse.",
+            }
+
+        # Process each tool call
+        messages.append(message)
+        for tool_call in message.tool_calls:
+            args = json.loads(tool_call.function.arguments)
+            sql = args.get("sql", "")
+
+            # Execute the SQL
+            step_results = []
+            step_error = None
+            try:
+                step_results = await execute_sql_fn(sql)
+                tool_result = json.dumps(step_results[:50], ensure_ascii=False, default=str)
+                if len(step_results) > 50:
+                    tool_result += f"\n... ({len(step_results)} résultats au total)"
+            except Exception as exc:
+                step_error = str(exc)
+                tool_result = json.dumps({"error": step_error}, ensure_ascii=False)
+
+            steps.append({"sql": sql, "results": step_results, "error": step_error})
+
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": tool_result,
+            })
+
+    # If we hit max iterations, return what we have
+    return {
+        "question": question,
+        "steps": steps,
+        "answer": "Analyse interrompue après trop d'itérations.",
+    }
