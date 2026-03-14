@@ -1,3 +1,4 @@
+from datetime import date as Date
 from fastapi import APIRouter, Query
 from app.db import get_pool
 from app.models import EnergiePoint
@@ -16,10 +17,10 @@ async def get_consommation(
     params = []
     if date_min:
         conditions.append(f"date >= ${len(params)+1}")
-        params.append(date_min)
+        params.append(Date.fromisoformat(date_min))
     if date_max:
         conditions.append(f"date <= ${len(params)+1}")
-        params.append(date_max)
+        params.append(Date.fromisoformat(date_max))
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
     query += " ORDER BY date"
