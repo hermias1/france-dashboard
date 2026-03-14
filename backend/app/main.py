@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db import get_pool, close_pool
-from app.routers import elections, energie, geo
+from app.routers import elections, energie, geo, question
 
 
 @asynccontextmanager
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(elections.router)
 app.include_router(energie.router)
 app.include_router(geo.router)
+app.include_router(question.router)
 
 
 @app.get("/api/health")

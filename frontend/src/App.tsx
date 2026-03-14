@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import KPIBar from './components/KPIBar'
 import ElectionsSection from './components/ElectionsSection'
 import EnergieSection from './components/EnergieSection'
+import QuestionBar from './components/QuestionBar'
 
 const queryClient = new QueryClient()
 
@@ -14,6 +15,7 @@ export default function App() {
           <KPIBar />
         </header>
         <main className="max-w-6xl mx-auto px-6 py-8">
+          <QuestionBar />
           <ElectionsSection />
           <EnergieSection />
           <footer className="text-center text-xs text-gray-400 mt-12 pb-8">

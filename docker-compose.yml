@@ -22,6 +22,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://etat:etat@db:5432/etat
+      NVIDIA_NIM_API_KEY: ${NVIDIA_NIM_API_KEY}
     depends_on:
       db:
         condition: service_healthy
