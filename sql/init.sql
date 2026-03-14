@@ -47,6 +47,30 @@ CREATE TABLE IF NOT EXISTS energie (
     temperature_reference FLOAT
 );
 
+CREATE TABLE IF NOT EXISTS delinquance (
+    id SERIAL PRIMARY KEY,
+    code_departement VARCHAR(3) NOT NULL,
+    annee INTEGER NOT NULL,
+    indicateur VARCHAR(100) NOT NULL,
+    nombre INTEGER,
+    taux_pour_mille FLOAT,
+    population INTEGER,
+    UNIQUE (code_departement, annee, indicateur)
+);
+
+CREATE TABLE IF NOT EXISTS immobilier (
+    id SERIAL PRIMARY KEY,
+    code_commune VARCHAR(5) NOT NULL,
+    annee INTEGER NOT NULL,
+    nb_mutations INTEGER,
+    nb_maisons INTEGER,
+    nb_apparts INTEGER,
+    prix_moyen INTEGER,
+    prix_m2_moyen INTEGER,
+    surface_moyenne INTEGER,
+    UNIQUE (code_commune, annee)
+);
+
 CREATE TABLE IF NOT EXISTS ingestion_runs (
     id SERIAL PRIMARY KEY,
     dataset_id VARCHAR(100) NOT NULL,
@@ -60,3 +84,5 @@ CREATE TABLE IF NOT EXISTS ingestion_runs (
 
 CREATE INDEX IF NOT EXISTS idx_elections_scrutin_niveau ON elections(scrutin, niveau, code_geo);
 CREATE INDEX IF NOT EXISTS idx_energie_date ON energie(date);
+CREATE INDEX IF NOT EXISTS idx_delinquance_dept_annee ON delinquance(code_departement, annee);
+CREATE INDEX IF NOT EXISTS idx_immobilier_commune_annee ON immobilier(code_commune, annee);

@@ -72,3 +72,40 @@ def upsert_energie(conn, df):
             values,
         )
     conn.commit()
+
+
+def upsert_delinquance(conn, df):
+    cols = ["code_departement", "annee", "indicateur", "nombre", "taux_pour_mille", "population"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO delinquance (code_departement, annee, indicateur, nombre, taux_pour_mille, population)
+               VALUES %s
+               ON CONFLICT (code_departement, annee, indicateur) DO UPDATE SET
+                 nombre = EXCLUDED.nombre,
+                 taux_pour_mille = EXCLUDED.taux_pour_mille,
+                 population = EXCLUDED.population""",
+            values,
+        )
+    conn.commit()
+
+
+def upsert_immobilier(conn, df):
+    cols = ["code_commune", "annee", "nb_mutations", "nb_maisons", "nb_apparts",
+            "prix_moyen", "prix_m2_moyen", "surface_moyenne"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO immobilier (code_commune, annee, nb_mutations, nb_maisons, nb_apparts,
+                 prix_moyen, prix_m2_moyen, surface_moyenne)
+               VALUES %s
+               ON CONFLICT (code_commune, annee) DO UPDATE SET
+                 nb_mutations = EXCLUDED.nb_mutations,
+                 prix_moyen = EXCLUDED.prix_moyen,
+                 prix_m2_moyen = EXCLUDED.prix_m2_moyen,
+                 surface_moyenne = EXCLUDED.surface_moyenne""",
+            values,
+        )
+    conn.commit()

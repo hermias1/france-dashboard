@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import KPIBar from './components/KPIBar'
 import ElectionsSection from './components/ElectionsSection'
 import EnergieSection from './components/EnergieSection'
+import DelinquanceSection from './components/DelinquanceSection'
+import ImmobilierSection from './components/ImmobilierSection'
 import QuestionBar from './components/QuestionBar'
 
 const queryClient = new QueryClient()
@@ -17,6 +19,10 @@ export default function App() {
         <main className="max-w-6xl mx-auto px-6 py-8">
           <QuestionBar />
           <ElectionsSection />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <DelinquanceSection />
+            <ImmobilierSection />
+          </div>
           <EnergieSection />
           <footer className="text-center text-xs text-gray-400 mt-12 pb-8">
             Données issues de data.gouv.fr — Projet open source

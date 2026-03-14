@@ -21,6 +21,14 @@ TABLE elections (id SERIAL PK, scrutin VARCHAR, date DATE, niveau VARCHAR ['regi
 TABLE energie (id SERIAL PK, date DATE UNIQUE, pic_consommation_mw INT, temperature_moyenne FLOAT, temperature_reference FLOAT)
   - Données nationales uniquement (pas par région)
   - Données journalières de 2013 à 2025
+TABLE delinquance (id SERIAL PK, code_departement VARCHAR, annee INT, indicateur VARCHAR, nombre INT, taux_pour_mille FLOAT, population INT)
+  - UNIQUE(code_departement, annee, indicateur)
+  - Par département, de 2016 à 2025
+  - Indicateurs : Homicides, Coups et blessures volontaires, Violences sexuelles, Vols avec armes, Vols violents sans arme, Vols sans violence contre des personnes, Cambriolages de logement, Vols de véhicules, Vols dans les véhicules, Vols d'accessoires sur véhicules, Destructions et dégradations volontaires, Trafic de stupéfiants, Usage de stupéfiants, Escroqueries, etc.
+TABLE immobilier (id SERIAL PK, code_commune VARCHAR, annee INT, nb_mutations INT, nb_maisons INT, nb_apparts INT, prix_moyen INT, prix_m2_moyen INT, surface_moyenne INT)
+  - UNIQUE(code_commune, annee)
+  - Par commune (code INSEE 5 chiffres), données 2024
+  - LEFT(code_commune, 2) = code département pour jointures
 
 Utilise l'outil execute_sql pour requêter la base. Tu peux faire plusieurs requêtes pour explorer les données avant de répondre.
 Pour les pourcentages de participation : votants::numeric / NULLIF(inscrits, 0) * 100
