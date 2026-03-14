@@ -4,3 +4,6 @@ __pycache__/
 .env
 *.pyc
 .venv/
+.DS_Store
+dist/
+firebase-debug.log
