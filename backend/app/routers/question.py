@@ -16,10 +16,22 @@ class AgentStep(BaseModel):
     error: str | None = None
 
 
+class ChartSpec(BaseModel):
+    chart_type: str
+    title: str
+    data: list[dict]
+    x_key: str
+    y_keys: list[str]
+    colors: list[str] | None = None
+    x_label: str | None = None
+    y_label: str | None = None
+
+
 class QuestionResponse(BaseModel):
     question: str
     steps: list[AgentStep]
     answer: str
+    chart: ChartSpec | None = None
 
 
 async def execute_sql(sql: str) -> list[dict]:
@@ -52,8 +64,13 @@ async def ask_question(req: QuestionRequest):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Erreur agent: {str(e)}")
 
+    chart = None
+    if result.get("chart"):
+        chart = ChartSpec(**result["chart"])
+
     return QuestionResponse(
         question=result["question"],
         steps=[AgentStep(**s) for s in result["steps"]],
         answer=result["answer"],
+        chart=chart,
     )

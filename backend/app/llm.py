@@ -24,49 +24,100 @@ TABLE energie (id SERIAL PK, date DATE UNIQUE, pic_consommation_mw INT, temperat
 TABLE delinquance (id SERIAL PK, code_departement VARCHAR, annee INT, indicateur VARCHAR, nombre INT, taux_pour_mille FLOAT, population INT)
   - UNIQUE(code_departement, annee, indicateur)
   - Par département, de 2016 à 2025
-  - Indicateurs : Homicides, Coups et blessures volontaires, Violences sexuelles, Vols avec armes, Vols violents sans arme, Vols sans violence contre des personnes, Cambriolages de logement, Vols de véhicules, Vols dans les véhicules, Vols d'accessoires sur véhicules, Destructions et dégradations volontaires, Trafic de stupéfiants, Usage de stupéfiants, Escroqueries, etc.
+  - Indicateurs : Homicides, Violences physiques hors cadre familial, Violences physiques intrafamiliales, Violences sexuelles, Vols avec armes, Vols violents sans arme, Vols sans violence contre des personnes, Cambriolages de logement, Vols de véhicules, Destructions et dégradations volontaires, Trafic de stupéfiants, Usage de stupéfiants, Escroqueries, etc.
 TABLE immobilier (id SERIAL PK, code_commune VARCHAR, annee INT, nb_mutations INT, nb_maisons INT, nb_apparts INT, prix_moyen INT, prix_m2_moyen INT, surface_moyenne INT)
   - UNIQUE(code_commune, annee)
   - Par commune (code INSEE 5 chiffres), données 2024
   - LEFT(code_commune, 2) = code département pour jointures
 
-Utilise l'outil execute_sql pour requêter la base. Tu peux faire plusieurs requêtes pour explorer les données avant de répondre.
-Pour les pourcentages de participation : votants::numeric / NULLIF(inscrits, 0) * 100
-Réponds toujours en français, de manière factuelle avec des chiffres précis, en 2-5 phrases."""
+Tu as 2 outils :
+1. execute_sql : pour requêter la base. Tu peux faire plusieurs requêtes.
+2. generate_chart : pour générer un graphique à partir des données. UTILISE-LE TOUJOURS pour accompagner ta réponse d'une visualisation.
 
-TOOLS = [{
-    "type": "function",
-    "function": {
-        "name": "execute_sql",
-        "description": "Exécute une requête SQL SELECT sur la base PostgreSQL des statistiques françaises. Retourne les résultats en JSON.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "sql": {
-                    "type": "string",
-                    "description": "La requête SQL PostgreSQL (SELECT uniquement)"
-                }
-            },
-            "required": ["sql"]
+Pour les pourcentages de participation : votants::numeric / NULLIF(inscrits, 0) * 100
+
+Workflow :
+1. Exécute les requêtes SQL nécessaires
+2. Analyse les résultats
+3. Appelle generate_chart avec les données pour créer un graphique pertinent
+4. Réponds en français avec des chiffres précis"""
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "execute_sql",
+            "description": "Exécute une requête SQL SELECT sur la base PostgreSQL.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sql": {"type": "string", "description": "La requête SQL PostgreSQL (SELECT uniquement)"}
+                },
+                "required": ["sql"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_chart",
+            "description": "Génère un graphique à afficher à l'utilisateur. Appelle cet outil après avoir obtenu les résultats SQL.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "chart_type": {
+                        "type": "string",
+                        "enum": ["bar", "horizontal_bar", "line", "pie", "scatter"],
+                        "description": "Type de graphique. bar=barres verticales, horizontal_bar=barres horizontales (bon pour classements), line=courbe temporelle, pie=camembert, scatter=nuage de points (corrélations)"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Titre du graphique"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                        "description": "Données du graphique. Chaque objet = un point. Ex: [{\"region\": \"Bretagne\", \"taux\": 57.1}, ...]"
+                    },
+                    "x_key": {
+                        "type": "string",
+                        "description": "Clé pour l'axe X (catégorie ou date)"
+                    },
+                    "y_keys": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Clés pour l'axe Y (une ou plusieurs séries). Ex: [\"taux\"] ou [\"voix_rn\", \"voix_lfi\"]"
+                    },
+                    "colors": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Couleurs hex pour chaque série Y. Ex: [\"#2563eb\", \"#dc2626\"]"
+                    },
+                    "x_label": {"type": "string", "description": "Label de l'axe X"},
+                    "y_label": {"type": "string", "description": "Label de l'axe Y"}
+                },
+                "required": ["chart_type", "title", "data", "x_key", "y_keys"]
+            }
         }
     }
-}]
+]
 
-MAX_ITERATIONS = 5
+MAX_ITERATIONS = 7
 
 
 async def run_agent(question: str, execute_sql_fn) -> dict:
     """
-    Run an agentic loop: the LLM can call execute_sql multiple times
-    before producing a final answer.
+    Run an agentic loop: the LLM can call execute_sql and generate_chart
+    multiple times before producing a final answer.
 
-    Returns: {question, steps: [{sql, results}], answer}
+    Returns: {question, steps: [{sql, results}], answer, chart}
     """
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": question},
     ]
     steps = []
+    chart = None
 
     for _ in range(MAX_ITERATIONS):
         response = await client.chat.completions.create(
@@ -74,7 +125,7 @@ async def run_agent(question: str, execute_sql_fn) -> dict:
             messages=messages,
             tools=TOOLS,
             tool_choice="auto",
-            max_tokens=1000,
+            max_tokens=2000,
             temperature=0,
         )
 
@@ -87,27 +138,45 @@ async def run_agent(question: str, execute_sql_fn) -> dict:
                 "question": question,
                 "steps": steps,
                 "answer": message.content or "Pas de réponse.",
+                "chart": chart,
             }
 
         # Process each tool call
         messages.append(message)
         for tool_call in message.tool_calls:
+            fn_name = tool_call.function.name
             args = json.loads(tool_call.function.arguments)
-            sql = args.get("sql", "")
 
-            # Execute the SQL
-            step_results = []
-            step_error = None
-            try:
-                step_results = await execute_sql_fn(sql)
-                tool_result = json.dumps(step_results[:50], ensure_ascii=False, default=str)
-                if len(step_results) > 50:
-                    tool_result += f"\n... ({len(step_results)} résultats au total)"
-            except Exception as exc:
-                step_error = str(exc)
-                tool_result = json.dumps({"error": step_error}, ensure_ascii=False)
+            if fn_name == "execute_sql":
+                sql = args.get("sql", "")
+                step_results = []
+                step_error = None
+                try:
+                    step_results = await execute_sql_fn(sql)
+                    tool_result = json.dumps(step_results[:50], ensure_ascii=False, default=str)
+                    if len(step_results) > 50:
+                        tool_result += f"\n... ({len(step_results)} résultats au total)"
+                except Exception as exc:
+                    step_error = str(exc)
+                    tool_result = json.dumps({"error": step_error}, ensure_ascii=False)
 
-            steps.append({"sql": sql, "results": step_results, "error": step_error})
+                steps.append({"sql": sql, "results": step_results, "error": step_error})
+
+            elif fn_name == "generate_chart":
+                chart = {
+                    "chart_type": args.get("chart_type", "bar"),
+                    "title": args.get("title", ""),
+                    "data": args.get("data", []),
+                    "x_key": args.get("x_key", ""),
+                    "y_keys": args.get("y_keys", []),
+                    "colors": args.get("colors", ["#2563eb"]),
+                    "x_label": args.get("x_label", ""),
+                    "y_label": args.get("y_label", ""),
+                }
+                tool_result = json.dumps({"status": "chart generated", "type": chart["chart_type"]})
+
+            else:
+                tool_result = json.dumps({"error": f"Unknown tool: {fn_name}"})
 
             messages.append({
                 "role": "tool",
@@ -115,9 +184,9 @@ async def run_agent(question: str, execute_sql_fn) -> dict:
                 "content": tool_result,
             })
 
-    # If we hit max iterations, return what we have
     return {
         "question": question,
         "steps": steps,
         "answer": "Analyse interrompue après trop d'itérations.",
+        "chart": chart,
     }

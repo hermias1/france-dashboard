@@ -1,4 +1,16 @@
 import { useState } from 'react'
+import DynamicChart from './DynamicChart'
+
+interface ChartSpec {
+  chart_type: string
+  title: string
+  data: Record<string, unknown>[]
+  x_key: string
+  y_keys: string[]
+  colors?: string[]
+  x_label?: string
+  y_label?: string
+}
 
 interface AgentStep {
   sql: string
@@ -10,6 +22,7 @@ interface AgentResult {
   question: string
   steps: AgentStep[]
   answer: string
+  chart?: ChartSpec | null
 }
 
 export default function QuestionBar() {
@@ -113,6 +126,9 @@ export default function QuestionBar() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-gray-800 whitespace-pre-line">{result.answer}</p>
           </div>
+
+          {/* Dynamic chart */}
+          {result.chart && <DynamicChart spec={result.chart} />}
 
           {/* Results table */}
           {lastStepWithResults?.results && lastStepWithResults.results.length > 0 && (
