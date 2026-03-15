@@ -97,6 +97,7 @@ async def get_parite_departement():
         JOIN departements d ON e.code_departement = d.code
         WHERE e.type_mandat = 'maire'
         GROUP BY e.code_departement, d.nom
+        HAVING COUNT(*) >= 10
         ORDER BY pct_femmes_maires DESC
     """)
     return [PariteDepartement(**dict(r)) for r in rows]
