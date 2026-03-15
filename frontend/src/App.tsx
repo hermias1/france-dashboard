@@ -15,6 +15,7 @@ import Environnement from './pages/Environnement'
 import Politique from './pages/Politique'
 import Versus from './pages/Versus'
 import Quiz from './pages/Quiz'
+import Decouvrir from './pages/Decouvrir'
 
 const queryClient = new QueryClient()
 
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="territoire/:code" element={<Territoire />} />
             <Route path="versus" element={<Versus />} />
             <Route path="quiz" element={<Quiz />} />
+            <Route path="decouvrir" element={<Decouvrir />} />
           </Route>
         </Routes>
       </BrowserRouter>
