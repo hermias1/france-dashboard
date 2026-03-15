@@ -71,6 +71,49 @@ CREATE TABLE IF NOT EXISTS immobilier (
     UNIQUE (code_commune, annee)
 );
 
+CREATE TABLE IF NOT EXISTS accidents (
+    id SERIAL PRIMARY KEY,
+    annee INTEGER NOT NULL,
+    code_departement VARCHAR(3) NOT NULL,
+    nb_accidents INTEGER NOT NULL,
+    nb_tues INTEGER DEFAULT 0,
+    nb_blesses INTEGER DEFAULT 0,
+    UNIQUE (annee, code_departement)
+);
+
+CREATE TABLE IF NOT EXISTS fibre (
+    id SERIAL PRIMARY KEY,
+    code_commune VARCHAR(5) NOT NULL,
+    nom_commune VARCHAR(200),
+    code_departement VARCHAR(3),
+    locaux_total INTEGER,
+    locaux_ftth INTEGER,
+    taux_couverture FLOAT,
+    UNIQUE (code_commune)
+);
+
+CREATE TABLE IF NOT EXISTS loyers (
+    id SERIAL PRIMARY KEY,
+    code_commune VARCHAR(5) NOT NULL,
+    nom_commune VARCHAR(200),
+    code_departement VARCHAR(3),
+    loyer_m2_moyen FLOAT,
+    UNIQUE (code_commune)
+);
+
+CREATE TABLE IF NOT EXISTS brevet (
+    id SERIAL PRIMARY KEY,
+    session INTEGER NOT NULL,
+    code_departement VARCHAR(3) NOT NULL,
+    nom_departement VARCHAR(100),
+    nb_etablissements INTEGER,
+    inscrits INTEGER,
+    presents INTEGER,
+    admis INTEGER,
+    taux_reussite FLOAT,
+    UNIQUE (session, code_departement)
+);
+
 CREATE TABLE IF NOT EXISTS ingestion_runs (
     id SERIAL PRIMARY KEY,
     dataset_id VARCHAR(100) NOT NULL,
@@ -86,3 +129,7 @@ CREATE INDEX IF NOT EXISTS idx_elections_scrutin_niveau ON elections(scrutin, ni
 CREATE INDEX IF NOT EXISTS idx_energie_date ON energie(date);
 CREATE INDEX IF NOT EXISTS idx_delinquance_dept_annee ON delinquance(code_departement, annee);
 CREATE INDEX IF NOT EXISTS idx_immobilier_commune_annee ON immobilier(code_commune, annee);
+CREATE INDEX IF NOT EXISTS idx_accidents_dept ON accidents(code_departement);
+CREATE INDEX IF NOT EXISTS idx_fibre_dept ON fibre(code_departement);
+CREATE INDEX IF NOT EXISTS idx_loyers_dept ON loyers(code_departement);
+CREATE INDEX IF NOT EXISTS idx_brevet_dept ON brevet(code_departement, session);

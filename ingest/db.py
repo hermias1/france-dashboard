@@ -109,3 +109,78 @@ def upsert_immobilier(conn, df):
             values,
         )
     conn.commit()
+
+
+def upsert_accidents(conn, df):
+    cols = ["annee", "code_departement", "nb_accidents", "nb_tues", "nb_blesses"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO accidents (annee, code_departement, nb_accidents, nb_tues, nb_blesses)
+               VALUES %s
+               ON CONFLICT (annee, code_departement) DO UPDATE SET
+                 nb_accidents = EXCLUDED.nb_accidents,
+                 nb_tues = EXCLUDED.nb_tues,
+                 nb_blesses = EXCLUDED.nb_blesses""",
+            values,
+        )
+    conn.commit()
+
+
+def upsert_fibre(conn, df):
+    cols = ["code_commune", "nom_commune", "code_departement", "locaux_total", "locaux_ftth", "taux_couverture"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO fibre (code_commune, nom_commune, code_departement, locaux_total, locaux_ftth, taux_couverture)
+               VALUES %s
+               ON CONFLICT (code_commune) DO UPDATE SET
+                 nom_commune = EXCLUDED.nom_commune,
+                 code_departement = EXCLUDED.code_departement,
+                 locaux_total = EXCLUDED.locaux_total,
+                 locaux_ftth = EXCLUDED.locaux_ftth,
+                 taux_couverture = EXCLUDED.taux_couverture""",
+            values,
+        )
+    conn.commit()
+
+
+def upsert_loyers(conn, df):
+    cols = ["code_commune", "nom_commune", "code_departement", "loyer_m2_moyen"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO loyers (code_commune, nom_commune, code_departement, loyer_m2_moyen)
+               VALUES %s
+               ON CONFLICT (code_commune) DO UPDATE SET
+                 nom_commune = EXCLUDED.nom_commune,
+                 code_departement = EXCLUDED.code_departement,
+                 loyer_m2_moyen = EXCLUDED.loyer_m2_moyen""",
+            values,
+        )
+    conn.commit()
+
+
+def upsert_brevet(conn, df):
+    cols = ["session", "code_departement", "nom_departement", "nb_etablissements",
+            "inscrits", "presents", "admis", "taux_reussite"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO brevet (session, code_departement, nom_departement,
+                 nb_etablissements, inscrits, presents, admis, taux_reussite)
+               VALUES %s
+               ON CONFLICT (session, code_departement) DO UPDATE SET
+                 nom_departement = EXCLUDED.nom_departement,
+                 nb_etablissements = EXCLUDED.nb_etablissements,
+                 inscrits = EXCLUDED.inscrits,
+                 presents = EXCLUDED.presents,
+                 admis = EXCLUDED.admis,
+                 taux_reussite = EXCLUDED.taux_reussite""",
+            values,
+        )
+    conn.commit()

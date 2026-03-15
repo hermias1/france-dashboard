@@ -24,6 +24,10 @@ Tables :
 - energie (date, pic_consommation_mw, temperature_moyenne) — national, journalier, 2013-2025
 - delinquance (code_departement, annee[2016-2025], indicateur, nombre, taux_pour_mille, population)
 - immobilier (code_commune, annee=2024, nb_mutations, prix_moyen, prix_m2_moyen, surface_moyenne) — LEFT(code_commune,2)=code dept
+- accidents (annee, code_departement, nb_accidents, nb_tues, nb_blesses) — accidents routiers par département
+- fibre (code_commune, nom_commune, code_departement, locaux_total, locaux_ftth, taux_couverture) — couverture fibre FTTH par commune
+- loyers (code_commune, nom_commune, code_departement, loyer_m2_moyen) — loyers indicatifs par commune
+- brevet (session, code_departement, nom_departement, nb_etablissements, inscrits, presents, admis, taux_reussite) — résultats du brevet par département
 
 Participation = votants::numeric / NULLIF(inscrits, 0) * 100
 Réponds UNIQUEMENT avec le SQL. Pas de markdown, pas d'explication."""

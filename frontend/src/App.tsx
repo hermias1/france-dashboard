@@ -6,6 +6,9 @@ import Elections from './pages/Elections'
 import Economie from './pages/Economie'
 import Securite from './pages/Securite'
 import Energie from './pages/Energie'
+import Transport from './pages/Transport'
+import Education from './pages/Education'
+import Numerique from './pages/Numerique'
 import ComingSoon from './pages/ComingSoon'
 
 const queryClient = new QueryClient()
@@ -22,9 +25,9 @@ export default function App() {
             <Route path="securite" element={<Securite />} />
             <Route path="energie" element={<Energie />} />
             <Route path="sante" element={<ComingSoon title="Santé" description="Dépenses de santé, déserts médicaux, autonomie" />} />
-            <Route path="education" element={<ComingSoon title="Éducation" description="Résultats du brevet, pression pesticides autour des écoles" />} />
-            <Route path="transport" element={<ComingSoon title="Transport" description="Accidents de la route, mobilité" />} />
-            <Route path="numerique" element={<ComingSoon title="Numérique" description="Couverture fibre optique, accès internet" />} />
+            <Route path="education" element={<Education />} />
+            <Route path="transport" element={<Transport />} />
+            <Route path="numerique" element={<Numerique />} />
           </Route>
         </Routes>
       </BrowserRouter>
