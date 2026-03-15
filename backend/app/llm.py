@@ -3,17 +3,17 @@ import os
 from openai import AsyncOpenAI
 
 # Default: NVIDIA NIM. Override with OLLAMA_URL for local model.
-OLLAMA_URL = os.environ.get("OLLAMA_URL")
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "").strip() or None
 
 if OLLAMA_URL:
     client = AsyncOpenAI(base_url=f"{OLLAMA_URL}/v1", api_key="ollama")
-    MODEL = os.environ.get("LLM_MODEL", "qwen2.5-coder:7b")
+    MODEL = os.environ.get("LLM_MODEL", "").strip() or "qwen2.5-coder:7b"
 else:
     client = AsyncOpenAI(
         base_url="https://integrate.api.nvidia.com/v1",
         api_key=os.environ.get("NVIDIA_NIM_API_KEY", ""),
     )
-    MODEL = os.environ.get("LLM_MODEL", "qwen/qwen3.5-122b-a10b")
+    MODEL = os.environ.get("LLM_MODEL", "").strip() or "qwen/qwen2.5-coder-32b-instruct"
 
 SQL_PROMPT = """Génère UNE requête SQL PostgreSQL pour répondre à cette question.
 
