@@ -192,6 +192,7 @@ export default function ElectionMap() {
         projectionConfig={{ center: [2.8, 46.2], scale: 2200 }}
         width={600}
         height={550}
+        style={{ width: '100%', height: 'auto' }}
       >
         <Geographies geography="/france-departements.json">
           {({ geographies }) =>

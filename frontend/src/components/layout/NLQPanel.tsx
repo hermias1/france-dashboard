@@ -70,7 +70,7 @@ export default function NLQPanel() {
       </button>
 
       {/* Panel */}
-      <div className={`fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-40 transform transition-transform ${open ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+      <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl z-40 transform transition-transform ${open ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
         <div className="px-4 py-3 bg-[#000091] text-white">
           <h2 className="text-sm font-semibold">Interroger les données</h2>
           <p className="text-[10px] text-white/60">L'agent analyse vos questions en temps réel</p>

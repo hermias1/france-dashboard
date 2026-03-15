@@ -19,7 +19,7 @@ const THEMES = [
   { path: '/politique', label: 'Politique', color: '#4338ca' },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <aside className="w-60 bg-[#0a0a1a] text-white flex flex-col shrink-0 min-h-screen relative overflow-hidden">
       {/* Subtle gradient overlay */}
@@ -42,7 +42,7 @@ export default function Sidebar() {
 
       <nav className="relative flex-1 py-3 overflow-y-auto">
         {MAIN_NAV.map(({ path, label, icon }) => (
-          <NavLink
+          <NavLink onClick={onNavigate}
             key={path}
             to={path}
             end={path === '/'}
@@ -66,7 +66,7 @@ export default function Sidebar() {
         </div>
 
         {THEMES.map(({ path, label, color }) => (
-          <NavLink
+          <NavLink onClick={onNavigate}
             key={path}
             to={path}
             className={({ isActive }) =>

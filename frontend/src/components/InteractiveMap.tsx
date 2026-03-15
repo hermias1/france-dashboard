@@ -100,7 +100,7 @@ export default function InteractiveMap() {
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{ center: [2.8, 46.2], scale: 2200 }}
-          width={500}
+          width={500} style={{ width: "100%", height: "auto" }}
           height={500}
         >
           <Geographies geography="/france-departements.json">
