@@ -68,7 +68,7 @@ export default function Politique() {
     ? ((stats.maires.femmes / stats.maires.total) * 100).toFixed(1)
     : null
 
-  // CSP des députés
+  // CSP des députés (truncate long labels)
   const cspData = useMemo(() => {
     if (!deputes) return []
     const counts: Record<string, number> = {}
@@ -77,9 +77,12 @@ export default function Politique() {
       counts[prof] = (counts[prof] || 0) + 1
     }
     return Object.entries(counts)
-      .map(([profession, nombre]) => ({ profession, nombre }))
+      .map(([profession, nombre]) => ({
+        profession: profession.length > 30 ? profession.slice(0, 28) + '…' : profession,
+        nombre,
+      }))
       .sort((a, b) => b.nombre - a.nombre)
-      .slice(0, 15)
+      .slice(0, 10)
   }, [deputes])
 
   // Parite rankings
@@ -146,14 +149,16 @@ export default function Politique() {
       </div>
 
       {cspData.length > 0 && (
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Professions des députés</h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={cspData} layout="vertical" margin={{ left: 180 }}>
-              <XAxis type="number" />
-              <YAxis type="category" dataKey="profession" width={170} tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(value: number) => value.toLocaleString('fr-FR')} />
-              <Bar dataKey="nombre" fill="#6366f1" radius={[0, 4, 4, 0]} />
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
+            Top 10 — Professions des députés
+          </h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={cspData} layout="vertical" margin={{ left: 200 }}>
+              <XAxis type="number" tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="profession" width={190} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(value: number) => [value.toLocaleString('fr-FR'), 'Députés']} />
+              <Bar dataKey="nombre" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>
           </ResponsiveContainer>
         </div>
