@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
@@ -13,6 +14,7 @@ interface FibreDept {
 }
 
 export default function Numerique() {
+  const isMobile = useIsMobile()
   const { data, isLoading } = useApi<FibreDept[]>('fibre', '/fibre/departements')
 
   const sortedAsc = useMemo(() => {
@@ -88,9 +90,9 @@ export default function Numerique() {
           <div className="text-gray-400 py-8 text-center text-sm">Chargement...</div>
         ) : (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={top10Worst} layout="vertical" margin={{ left: 140 }}>
+            <BarChart data={top10Worst} layout="vertical" margin={{ left: isMobile ? 80 : 140 }}>
               <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
-              <YAxis type="category" dataKey="nom_departement" width={130} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="nom_departement" width={isMobile ? 70 : 130} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(v: number) => [`${v.toFixed(1)}%`, 'Couverture fibre']} />
               <Bar dataKey="taux_couverture_moyen" fill="#06b6d4" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>

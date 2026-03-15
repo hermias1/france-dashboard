@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useMemo, useState } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
@@ -17,6 +18,7 @@ type Mode = 'absolu' | 'habitant'
 
 export default function Transport() {
   const [mode, setMode] = useState<Mode>('absolu')
+  const isMobile = useIsMobile()
   const { data, isLoading } = useApi<AccidentDept[]>('accidents', '/accidents/departements?annee=2024')
 
   const sortedAbsolu = useMemo(() => {
@@ -109,9 +111,9 @@ export default function Transport() {
           <div className="text-gray-400 py-8 text-center text-sm">Chargement...</div>
         ) : (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={top10} layout="vertical" margin={{ left: 140 }}>
+            <BarChart data={top10} layout="vertical" margin={{ left: isMobile ? 80 : 140 }}>
               <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="nom_departement" width={130} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="nom_departement" width={isMobile ? 70 : 130} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(v: number) => [mode === 'absolu' ? v.toLocaleString('fr-FR') : v.toFixed(1), unit]} />
               <Bar dataKey={dataKey} fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>

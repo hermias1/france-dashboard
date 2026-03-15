@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   ScatterChart, Scatter,
@@ -21,6 +22,7 @@ interface ChartSpec {
 }
 
 export default function DynamicChart({ spec }: { spec: ChartSpec }) {
+  const isMobile = useIsMobile()
   const colors = spec.colors?.length ? spec.colors : DEFAULT_COLORS
   const data = spec.data
 
@@ -31,7 +33,7 @@ export default function DynamicChart({ spec }: { spec: ChartSpec }) {
       <h3 className="text-sm font-medium text-gray-700 mb-3">{spec.title}</h3>
       <ResponsiveContainer width="100%" height={300}>
         {spec.chart_type === 'horizontal_bar' ? (
-          <BarChart data={data} layout="vertical" margin={{ left: 100 }}>
+          <BarChart data={data} layout="vertical" margin={{ left: isMobile ? 60 : 100 }}>
             <XAxis type="number" tick={{ fontSize: 11 }} />
             <YAxis type="category" dataKey={spec.x_key} width={90} tick={{ fontSize: 11 }} />
             <Tooltip />

@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import PageHeader from '../components/layout/PageHeader'
@@ -57,6 +58,7 @@ function StatCard({ label, stats }: { label: string; stats: MandatStats }) {
 }
 
 export default function Politique() {
+  const isMobile = useIsMobile()
   const { data: stats } = useApi<PolitiqueStats>('politique-stats', '/politique/stats')
   const { data: deputes } = useApi<Elu[]>('politique-deputes', '/politique/deputes')
   const { data: parite } = useApi<PariteDepartement[]>('politique-parite', '/politique/parite-departement')
@@ -154,9 +156,9 @@ export default function Politique() {
             Top 10 — Professions des députés
           </h3>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={cspData} layout="vertical" margin={{ left: 200 }}>
+            <BarChart data={cspData} layout="vertical" margin={{ left: isMobile ? 80 : 190 }}>
               <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="profession" width={190} tick={{ fontSize: 10 }} />
+              <YAxis type="category" dataKey="profession" width={isMobile ? 70 : 180} tick={{ fontSize: 10 }} />
               <Tooltip formatter={(value: number) => [value.toLocaleString('fr-FR'), 'Députés']} />
               <Bar dataKey="nombre" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>

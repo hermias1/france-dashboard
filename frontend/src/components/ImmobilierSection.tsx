@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useApi } from '../hooks/useApi'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -11,6 +12,7 @@ interface ImmobilierItem {
 }
 
 export default function ImmobilierSection() {
+  const isMobile = useIsMobile()
   const { data, isLoading, error } = useApi<ImmobilierItem[]>(
     'immobilier',
     '/immobilier/departements?annee=2024'
@@ -31,7 +33,7 @@ export default function ImmobilierSection() {
       </h2>
       <p className="text-xs text-gray-400 mb-4">Top 10 départements les plus chers</p>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={top10} layout="vertical" margin={{ left: 130 }}>
+        <BarChart data={top10} layout="vertical" margin={{ left: isMobile ? 70 : 130 }}>
           <XAxis
             type="number"
             tick={{ fontSize: 11 }}

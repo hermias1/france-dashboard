@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
@@ -14,6 +15,7 @@ interface AplByDept {
 }
 
 export default function Sante() {
+  const isMobile = useIsMobile()
   const { data, isLoading } = useApi<AplByDept[]>('medecins', '/sante/medecins')
 
   const sortedAsc = useMemo(() => {
@@ -85,9 +87,9 @@ export default function Sante() {
           <div className="text-gray-400 py-8 text-center text-sm">Chargement...</div>
         ) : (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={top10Worst} layout="vertical" margin={{ left: 140 }}>
+            <BarChart data={top10Worst} layout="vertical" margin={{ left: isMobile ? 80 : 140 }}>
               <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="nom_departement" width={130} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="nom_departement" width={isMobile ? 70 : 130} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(v: number) => [`${v}`, 'APL médecins']} />
               <Bar dataKey="apl_moyen" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>

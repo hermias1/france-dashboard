@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
@@ -14,6 +15,7 @@ interface BrevetDept {
 }
 
 export default function Education() {
+  const isMobile = useIsMobile()
   const { data, isLoading } = useApi<BrevetDept[]>('brevet', '/education/brevet')
 
   const sortedAsc = useMemo(() => {
@@ -92,9 +94,9 @@ export default function Education() {
           <div className="text-gray-400 py-8 text-center text-sm">Chargement...</div>
         ) : (
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={top10Worst} layout="vertical" margin={{ left: 140 }}>
+            <BarChart data={top10Worst} layout="vertical" margin={{ left: isMobile ? 80 : 140 }}>
               <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
-              <YAxis type="category" dataKey="nom_departement" width={130} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="nom_departement" width={isMobile ? 70 : 130} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(v: number) => [`${v.toFixed(1)}%`, 'Taux de réussite']} />
               <Bar dataKey="taux_reussite" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>

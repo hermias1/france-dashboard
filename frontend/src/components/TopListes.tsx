@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import type { ElectionResult } from '../lib/api'
 import { NUANCE_COLORS } from '../lib/colors'
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function TopListes({ results }: Props) {
+  const isMobile = useIsMobile()
   const byListe = new Map<string, { liste: string; nuance: string; voix: number }>()
   results.forEach((r) => {
     const entry = byListe.get(r.liste) ?? { liste: r.liste, nuance: r.nuance, voix: 0 }
@@ -25,7 +27,7 @@ export default function TopListes({ results }: Props) {
 
   return (
     <ResponsiveContainer width="100%" height={250}>
-      <BarChart data={top5} layout="vertical" margin={{ left: 120 }}>
+      <BarChart data={top5} layout="vertical" margin={{ left: isMobile ? 70 : 120 }}>
         <XAxis type="number" tickFormatter={(v) => `${v}M`} />
         <YAxis type="category" dataKey="liste" width={110} tick={{ fontSize: 11 }} />
         <Tooltip formatter={(v: number) => `${v}M voix`} />

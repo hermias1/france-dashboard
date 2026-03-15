@@ -1,3 +1,4 @@
+import { useIsMobile } from '../hooks/useIsMobile'
 import { useApi } from '../hooks/useApi'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -13,6 +14,7 @@ interface DelinquanceItem {
 }
 
 export default function DelinquanceSection() {
+  const isMobile = useIsMobile()
   const { data, isLoading, error } = useApi<DelinquanceItem[]>(
     'delinquance',
     '/delinquance/departements?annee=2024&indicateur=Cambriolages de logement'
@@ -33,7 +35,7 @@ export default function DelinquanceSection() {
       </h2>
       <p className="text-xs text-gray-400 mb-4">Top 10 départements par taux pour 1 000 habitants</p>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={top10} layout="vertical" margin={{ left: 130 }}>
+        <BarChart data={top10} layout="vertical" margin={{ left: isMobile ? 70 : 130 }}>
           <XAxis type="number" tick={{ fontSize: 11 }} />
           <YAxis
             type="category"
