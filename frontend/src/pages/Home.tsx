@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import SearchTerritoire from '../components/SearchTerritoire'
+import Decouvertes from '../components/Decouvertes'
 
 const THEMES = [
   { path: '/elections', icon: '🗳️', label: 'Élections', color: 'bg-blue-50 border-blue-200', stat: 'EU 2024 + Présidentielle 2022' },
@@ -26,6 +27,9 @@ export default function Home() {
         </p>
         <SearchTerritoire />
       </div>
+
+      {/* Découvertes */}
+      <Decouvertes />
 
       {/* Theme cards */}
       <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-3">Ou explorez par thématique</h2>
