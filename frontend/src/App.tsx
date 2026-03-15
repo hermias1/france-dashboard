@@ -9,6 +9,7 @@ import Energie from './pages/Energie'
 import Transport from './pages/Transport'
 import Education from './pages/Education'
 import Numerique from './pages/Numerique'
+import Territoire from './pages/Territoire'
 import ComingSoon from './pages/ComingSoon'
 
 const queryClient = new QueryClient()
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="education" element={<Education />} />
             <Route path="transport" element={<Transport />} />
             <Route path="numerique" element={<Numerique />} />
+            <Route path="territoire/:code" element={<Territoire />} />
           </Route>
         </Routes>
       </BrowserRouter>
