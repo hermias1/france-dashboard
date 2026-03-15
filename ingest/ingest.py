@@ -197,7 +197,8 @@ def run_apl():
         print(f"  Downloading APL médecins XLSX...")
         resp = requests.get(APL_SOURCE)
         resp.raise_for_status()
-        df = pd.read_excel(io.BytesIO(resp.content), sheet_name='APL 2023', skiprows=9)
+        df = pd.read_excel(io.BytesIO(resp.content), sheet_name='APL 2023', skiprows=8)
+        df = df.iloc[1:]  # skip units row
         parsed = parse_apl_medecins(df)
         upsert_apl_medecins(conn, parsed)
         print(f"  → {len(parsed)} rows")
