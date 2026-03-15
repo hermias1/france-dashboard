@@ -78,10 +78,15 @@ INDICATORS = [
     },
     {
         "key": "accidents",
-        "label": "Accidents route (nb)",
+        "label": "Accidents route (/100K hab)",
         "icon": "🚗",
-        "sql": """SELECT code_departement as dept, nb_accidents as val
-                  FROM accidents WHERE annee = 2024""",
+        "sql": """SELECT a.code_departement as dept,
+                  a.nb_accidents::numeric / NULLIF(d.population, 0) * 100000 as val
+                  FROM accidents a
+                  LEFT JOIN (SELECT DISTINCT ON (code_departement) code_departement, population
+                             FROM delinquance WHERE annee = 2024 ORDER BY code_departement) d
+                  ON a.code_departement = d.code_departement
+                  WHERE a.annee = 2024 AND d.population > 0""",
         "higher_is": "accidentogène",
     },
     {
