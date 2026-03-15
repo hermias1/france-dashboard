@@ -261,12 +261,29 @@ async def get_correlations():
         except Exception:
             continue
 
+    # Thematic families — correlations within same family are trivial
+    FAMILIES = {
+        "immobilier": {"prix_immo", "loyer", "ratio_loyer_achat", "prix_evolution"},
+        "securite": {"cambriolages", "violences", "tendance_cambriolages", "tendance_violences"},
+        "vote": {"participation", "vote_rn"},
+        "demo": {"densite_pop", "age_maires"},
+    }
+
+    def same_family(k1, k2):
+        for family in FAMILIES.values():
+            if k1 in family and k2 in family:
+                return True
+        return False
+
     # Compute all pairwise correlations
     results = []
     keys = list(data.keys())
     for i in range(len(keys)):
         for j in range(i + 1, len(keys)):
             k1, k2 = keys[i], keys[j]
+            # Skip same-family pairs (trivial)
+            if same_family(k1, k2):
+                continue
             # Find common departments
             common = set(data[k1].keys()) & set(data[k2].keys())
             if len(common) < 20:
@@ -274,7 +291,7 @@ async def get_correlations():
             x_vals = [data[k1][d] for d in common]
             y_vals = [data[k2][d] for d in common]
             r = pearson(x_vals, y_vals)
-            if abs(r) > 0.3:  # Only interesting correlations
+            if abs(r) > 0.35:
                 ind_x = next(ind for ind in INDICATORS if ind["key"] == k1)
                 ind_y = next(ind for ind in INDICATORS if ind["key"] == k2)
                 results.append(Insight(
