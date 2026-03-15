@@ -9,6 +9,7 @@ from datasets.elections import parse_elections_by_region, parse_elections_by_dep
 from datasets.energie import parse_energie
 from datasets.delinquance import parse_delinquance_departement
 from datasets.immobilier import parse_immobilier_communes
+from datasets.presidentielle import parse_presidentielle_raw
 
 GEO_SOURCES = {
     "regions": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_region_2026.csv",
@@ -23,6 +24,8 @@ ELECTIONS_SOURCES = {
 ENERGIE_SOURCE = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/pic-journalier-consommation-brute/exports/csv?use_labels=true"
 
 DELINQUANCE_SOURCE = "https://static.data.gouv.fr/resources/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales/20260129-160318/donnee-dep-data.gouv-2025-geographie2025-produit-le2026-01-22.csv"
+
+PRESIDENTIELLE_SOURCE = "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/20220414-152356/resultats-par-niveau-dpt-t1-france-entiere.txt"
 
 IMMOBILIER_SOURCES = [
     f"https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2024/20250707-085855/communesdvf2024.csv",
@@ -98,6 +101,21 @@ def run_delinquance():
         conn.close()
 
 
+def run_presidentielle():
+    conn = get_connection()
+    try:
+        print("Ingesting presidentielle 2022 T1 (departements)...")
+        print(f"  Downloading {PRESIDENTIELLE_SOURCE}")
+        resp = requests.get(PRESIDENTIELLE_SOURCE)
+        resp.raise_for_status()
+        text = resp.content.decode("cp1252")
+        rows = parse_presidentielle_raw(text, "presidentielle-2022-t1", "2022-04-10")
+        upsert_elections(conn, rows)
+        print(f"  → {len(rows)} rows")
+    finally:
+        conn.close()
+
+
 def run_immobilier():
     conn = get_connection()
     try:
@@ -121,6 +139,8 @@ if __name__ == "__main__":
         run_energie()
     if target in ("delinquance", "all"):
         run_delinquance()
+    if target in ("presidentielle", "all"):
+        run_presidentielle()
     if target in ("immobilier", "all"):
         run_immobilier()
     print("Done.")

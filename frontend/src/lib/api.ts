@@ -36,3 +36,19 @@ export interface GeoRegion {
   code: string
   nom: string
 }
+
+export interface DelinquanceItem {
+  code_departement: string
+  nom_departement: string
+  indicateur: string
+  nombre: number
+  taux_pour_mille: number
+  population: number
+}
+
+export interface ImmobilierItem {
+  code_departement: string
+  nom_departement: string
+  prix_m2_moyen: number
+  nb_mutations: number
+}
