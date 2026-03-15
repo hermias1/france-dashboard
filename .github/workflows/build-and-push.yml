@@ -63,6 +63,8 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
+          provenance: false
+          sbom: false
           tags: |
             ghcr.io/${{ env.IMAGE_OWNER }}/${{ matrix.service }}:latest
             ghcr.io/${{ env.IMAGE_OWNER }}/${{ matrix.service }}:calver-${{ steps.meta.outputs.CALVER }}
