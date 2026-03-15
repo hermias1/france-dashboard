@@ -78,14 +78,15 @@ export default function Politique() {
       const prof = d.profession || 'Non renseigné'
       counts[prof] = (counts[prof] || 0) + 1
     }
+    const maxLen = isMobile ? 15 : 28
     return Object.entries(counts)
       .map(([profession, nombre]) => ({
-        profession: profession.length > 30 ? profession.slice(0, 28) + '…' : profession,
+        profession: profession.length > maxLen ? profession.slice(0, maxLen - 1) + '…' : profession,
         nombre,
       }))
       .sort((a, b) => b.nombre - a.nombre)
-      .slice(0, 10)
-  }, [deputes])
+      .slice(0, isMobile ? 8 : 10)
+  }, [deputes, isMobile])
 
   // Parite rankings
   const topParite = useMemo(() => {
@@ -155,10 +156,10 @@ export default function Politique() {
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
             Top 10 — Professions des députés
           </h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={cspData} layout="vertical" margin={{ left: isMobile ? 80 : 190 }}>
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="profession" width={isMobile ? 70 : 180} tick={{ fontSize: 10 }} />
+          <ResponsiveContainer width="100%" height={isMobile ? 300 : 350}>
+            <BarChart data={cspData} layout="vertical" margin={{ left: isMobile ? 10 : 190 }}>
+              <XAxis type="number" tick={{ fontSize: isMobile ? 9 : 11 }} />
+              <YAxis type="category" dataKey="profession" width={isMobile ? 100 : 180} tick={{ fontSize: isMobile ? 9 : 10 }} />
               <Tooltip formatter={(value: number) => [value.toLocaleString('fr-FR'), 'Députés']} />
               <Bar dataKey="nombre" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={18} />
             </BarChart>
