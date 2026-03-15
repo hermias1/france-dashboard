@@ -91,7 +91,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function formatValue(v: number, unit: string): string {
-  if (unit === '%') return `${(v * 100).toFixed(1)} %`
+  if (unit === '%') return `${v.toFixed(1)} %`
   if (unit === '‰') return `${v.toFixed(2)} ‰`
   if (unit === '€/m²') return `${Math.round(v).toLocaleString('fr-FR')} €/m²`
   return `${v.toLocaleString('fr-FR')} ${unit}`
