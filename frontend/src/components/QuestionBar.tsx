@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Markdown from 'react-markdown'
 import DynamicChart from './DynamicChart'
 
 interface ChartSpec {
@@ -8,8 +9,6 @@ interface ChartSpec {
   x_key: string
   y_keys: string[]
   colors?: string[]
-  x_label?: string
-  y_label?: string
 }
 
 interface AgentStep {
@@ -33,9 +32,9 @@ export default function QuestionBar() {
 
   const suggestions = [
     "Quel est le taux de participation par région ?",
-    "Quel jour a-t-on consommé le plus d'électricité ?",
+    "Top 5 départements les plus chers en immobilier",
     "Quelles sont les 5 régions où le RN a le plus de voix ?",
-    "Compare la consommation d'énergie en janvier vs juillet 2024",
+    "Compare cambriolages et prix immobilier par département",
   ]
 
   async function askQuestion(q: string) {
@@ -65,11 +64,6 @@ export default function QuestionBar() {
     if (query.trim()) askQuestion(query.trim())
   }
 
-  // Find the last step with results to display as table
-  const lastStepWithResults = result?.steps
-    .filter(s => s.results && s.results.length > 0)
-    .at(-1)
-
   return (
     <section className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
       <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-4">
@@ -88,9 +82,11 @@ export default function QuestionBar() {
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
-          {loading ? '...' : 'Demander'}
+          {loading ? (
+            <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : 'Analyser'}
         </button>
       </form>
 
@@ -99,7 +95,7 @@ export default function QuestionBar() {
           <button
             key={s}
             onClick={() => { setQuery(s); askQuestion(s) }}
-            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full transition"
+            className="text-xs bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-600 px-3 py-1.5 rounded-full transition border border-transparent hover:border-blue-200"
             disabled={loading}
           >
             {s}
@@ -108,9 +104,9 @@ export default function QuestionBar() {
       </div>
 
       {loading && (
-        <div className="text-gray-400 text-sm py-4 flex items-center gap-2">
-          <span className="inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-          L'agent analyse vos données...
+        <div className="flex flex-col items-center gap-3 py-8">
+          <span className="inline-block w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-gray-500 text-sm">L'agent analyse vos données...</span>
         </div>
       )}
 
@@ -123,62 +119,29 @@ export default function QuestionBar() {
       {result && (
         <div className="space-y-4">
           {/* Answer */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-gray-800 whitespace-pre-line">{result.answer}</p>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
+            <div className="prose prose-sm max-w-none text-gray-800
+              [&>p]:text-sm [&>p]:leading-relaxed [&>p]:mb-2
+              [&>ul]:text-sm [&>ol]:text-sm
+              [&>strong]:text-gray-900
+            ">
+              <Markdown>{result.answer}</Markdown>
+            </div>
           </div>
 
-          {/* Dynamic chart */}
+          {/* Chart */}
           {result.chart && <DynamicChart spec={result.chart} />}
 
-          {/* Results table */}
-          {lastStepWithResults?.results && lastStepWithResults.results.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    {Object.keys(lastStepWithResults.results[0]).map((col) => (
-                      <th key={col} className="py-2 px-3 text-xs uppercase text-gray-500 font-medium">
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {lastStepWithResults.results.slice(0, 20).map((row, i) => (
-                    <tr key={i} className="border-b border-gray-100">
-                      {Object.values(row).map((val, j) => (
-                        <td key={j} className="py-2 px-3 text-gray-700">
-                          {typeof val === 'number'
-                            ? Number.isInteger(val) ? val.toLocaleString('fr-FR') : Number(val).toFixed(2)
-                            : String(val ?? '')}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {lastStepWithResults.results.length > 20 && (
-                <p className="text-xs text-gray-400 mt-2">
-                  {lastStepWithResults.results.length} résultats au total
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Agent steps (expandable) */}
+          {/* Agent reasoning */}
           <details className="text-xs text-gray-400">
             <summary className="cursor-pointer hover:text-gray-600">
-              Voir le raisonnement de l'agent ({result.steps.length} requête{result.steps.length > 1 ? 's' : ''})
+              Raisonnement ({result.steps.length} requête{result.steps.length > 1 ? 's' : ''})
             </summary>
             <div className="mt-2 space-y-2">
               {result.steps.map((step, i) => (
-                <div key={i} className="bg-gray-50 rounded p-3">
-                  <div className="text-gray-500 mb-1">Étape {i + 1}</div>
-                  <pre className="overflow-x-auto text-gray-600">{step.sql}</pre>
-                  {step.error && <div className="text-red-500 mt-1">{step.error}</div>}
-                  {step.results && (
-                    <div className="text-gray-400 mt-1">{step.results.length} résultats</div>
-                  )}
+                <div key={i} className="bg-gray-50 rounded p-3 font-mono">
+                  <pre className="overflow-x-auto text-gray-600 text-[11px]">{step.sql}</pre>
+                  {step.error && <div className="text-red-500 mt-1 font-sans">{step.error}</div>}
                 </div>
               ))}
             </div>

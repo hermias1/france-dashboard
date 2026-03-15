@@ -23,8 +23,6 @@ class ChartSpec(BaseModel):
     x_key: str
     y_keys: list[str]
     colors: list[str] | None = None
-    x_label: str | None = None
-    y_label: str | None = None
 
 
 class QuestionResponse(BaseModel):
@@ -35,7 +33,6 @@ class QuestionResponse(BaseModel):
 
 
 async def execute_sql(sql: str) -> list[dict]:
-    """Execute SQL with safety checks. Used as tool by the agent."""
     sql_upper = sql.upper().strip()
     if not (sql_upper.startswith("SELECT") or sql_upper.startswith("WITH")):
         raise ValueError("Seules les requêtes SELECT sont autorisées")
@@ -65,8 +62,11 @@ async def ask_question(req: QuestionRequest):
         raise HTTPException(status_code=502, detail=f"Erreur agent: {str(e)}")
 
     chart = None
-    if result.get("chart"):
-        chart = ChartSpec(**result["chart"])
+    if result.get("chart") and isinstance(result["chart"], dict):
+        try:
+            chart = ChartSpec(**result["chart"])
+        except Exception:
+            pass
 
     return QuestionResponse(
         question=result["question"],
