@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000091"/>
+      <stop offset="40%" style="stop-color:#1a1a6e"/>
+      <stop offset="100%" style="stop-color:#0a0a2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1050" cy="100" r="200" fill="#6a6af4" opacity="0.08"/>
+  <circle cx="100" cy="550" r="150" fill="#e1000f" opacity="0.06"/>
+  <text x="80" y="80" font-family="Georgia,serif" font-size="16" fill="#c9992d" letter-spacing="4">PORTAIL CITOYEN DES DONNÉES PUBLIQUES</text>
+  <text x="80" y="180" font-family="Georgia,serif" font-size="72" font-weight="bold" fill="white">France</text>
+  <text x="80" y="260" font-family="Georgia,serif" font-size="72" font-weight="bold" fill="white" opacity="0.5">Dashboard</text>
+  <text x="80" y="340" font-family="sans-serif" font-size="24" fill="white" opacity="0.5">Comprendre la France par les données</text>
+  <line x1="80" y1="380" x2="400" y2="380" stroke="#c9992d" stroke-width="2"/>
+  <text x="80" y="430" font-family="sans-serif" font-size="18" fill="white" opacity="0.4">15 datasets · 450K lignes · 101 départements</text>
+  <text x="80" y="470" font-family="sans-serif" font-size="18" fill="white" opacity="0.4">Élections · Économie · Sécurité · Énergie · Santé</text>
+  <text x="80" y="570" font-family="sans-serif" font-size="20" fill="#c9992d">francedashboard.fr</text>
+</svg>
