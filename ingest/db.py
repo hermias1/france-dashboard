@@ -256,6 +256,29 @@ def upsert_brevet(conn, df):
     conn.commit()
 
 
+def upsert_precarite(conn, df):
+    cols = ["code_departement", "nom_departement", "revenu_median", "taux_pauvrete",
+            "taux_rsa", "taux_chomage_jeunes", "salaire_femmes", "salaire_hommes"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO precarite (code_departement, nom_departement, revenu_median, taux_pauvrete,
+                 taux_rsa, taux_chomage_jeunes, salaire_femmes, salaire_hommes)
+               VALUES %s
+               ON CONFLICT (code_departement) DO UPDATE SET
+                 nom_departement = EXCLUDED.nom_departement,
+                 revenu_median = EXCLUDED.revenu_median,
+                 taux_pauvrete = EXCLUDED.taux_pauvrete,
+                 taux_rsa = EXCLUDED.taux_rsa,
+                 taux_chomage_jeunes = EXCLUDED.taux_chomage_jeunes,
+                 salaire_femmes = EXCLUDED.salaire_femmes,
+                 salaire_hommes = EXCLUDED.salaire_hommes""",
+            values,
+        )
+    conn.commit()
+
+
 def upsert_mix_energetique(conn, df):
     cols = ["date", "consommation_mw", "nucleaire_mw", "eolien_mw", "solaire_mw",
             "hydraulique_mw", "gaz_mw", "bioenergies_mw", "fioul_mw", "echanges_mw", "taux_co2"]

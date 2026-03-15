@@ -6,7 +6,7 @@ from db import (get_connection, upsert_regions, upsert_departements, upsert_elec
                 upsert_energie, upsert_delinquance, upsert_immobilier,
                 upsert_accidents, upsert_fibre, upsert_loyers, upsert_brevet,
                 upsert_apl_medecins, upsert_elus, upsert_chomage,
-                upsert_desinfo_climat, upsert_mix_energetique)
+                upsert_desinfo_climat, upsert_mix_energetique, upsert_precarite)
 from datasets.geo import parse_regions, parse_departements
 from datasets.elections import parse_elections_by_region, parse_elections_by_departement
 from datasets.energie import parse_energie
@@ -23,6 +23,7 @@ from datasets.elus import parse_deputes, parse_senateurs, parse_maires
 from datasets.chomage import parse_chomage
 from datasets.desinfo_climat import parse_desinfo_climat
 from datasets.mix_energetique import parse_mix_energetique
+from datasets.precarite import parse_precarite
 
 GEO_SOURCES = {
     "regions": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_region_2026.csv",
@@ -60,6 +61,8 @@ APL_SOURCE = "https://data.drees.solidarites-sante.gouv.fr/api/v2/catalog/datase
 
 CHOMAGE_SOURCE = "https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_defm_stock_regions_brut_mens/exports/csv?use_labels=true&limit=50000"
 DESINFO_CLIMAT_SOURCE = "https://static.data.gouv.fr/resources/etat-de-la-mesinformation-et-desinformation-climatique-dans-les-medias-audiovisuels-en-2025/20251105-151339/misinformation-per-media.csv"
+
+PRECARITE_SOURCE = "https://static.data.gouv.fr/resources/indicateurs-territoriaux-de-precarite-par-commune-epci-departement-et-region/20260306-112349/20260306-indicateurs-precarite.csv"
 
 ELUS_SOURCES = {
     "deputes": "https://static.data.gouv.fr/resources/repertoire-national-des-elus-1/20251223-104106/elus-deputes-dep.csv",
@@ -295,6 +298,18 @@ def run_desinfo_climat():
         conn.close()
 
 
+def run_precarite():
+    conn = get_connection()
+    try:
+        print("Ingesting precarite...")
+        raw = download_csv(PRECARITE_SOURCE, sep=";", encoding="latin-1")
+        df = parse_precarite(raw)
+        upsert_precarite(conn, df)
+        print(f"  → {len(df)} rows")
+    finally:
+        conn.close()
+
+
 def run_mix_energetique():
     conn = get_connection()
     try:
@@ -329,5 +344,6 @@ if __name__ == "__main__":
     if target in ("chomage", "all"): run_chomage()
     if target in ("desinfo_climat", "all"): run_desinfo_climat()
     if target in ("elus", "all"): run_elus()
+    if target in ("precarite", "all"): run_precarite()
     if target in ("mix", "all"): run_mix_energetique()
     print("Done.")

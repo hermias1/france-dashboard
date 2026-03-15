@@ -115,6 +115,35 @@ INDICATORS = [
                   FROM elus WHERE type_mandat = 'maire' GROUP BY code_departement""",
         "higher_is": "paritaire",
     },
+    # === PRÉCARITÉ ===
+    {
+        "key": "revenu_median",
+        "label": "Revenu médian (€)",
+        "icon": "💰",
+        "sql": "SELECT code_departement as dept, revenu_median as val FROM precarite WHERE revenu_median > 0",
+        "higher_is": "riche",
+    },
+    {
+        "key": "taux_pauvrete",
+        "label": "Taux de pauvreté (%)",
+        "icon": "📉",
+        "sql": "SELECT code_departement as dept, taux_pauvrete as val FROM precarite WHERE taux_pauvrete > 0",
+        "higher_is": "précaire",
+    },
+    {
+        "key": "taux_chomage_jeunes",
+        "label": "Chômage jeunes (%)",
+        "icon": "👤",
+        "sql": "SELECT code_departement as dept, taux_chomage_jeunes as val FROM precarite WHERE taux_chomage_jeunes > 0",
+        "higher_is": "au chômage",
+    },
+    {
+        "key": "ecart_salarial",
+        "label": "Écart salarial H/F (€)",
+        "icon": "⚖️",
+        "sql": "SELECT code_departement as dept, salaire_hommes - salaire_femmes as val FROM precarite WHERE salaire_hommes > 0 AND salaire_femmes > 0",
+        "higher_is": "inégal",
+    },
     # === DERIVED INDICATORS (computed from existing data) ===
     {
         "key": "tendance_cambriolages",
@@ -225,6 +254,10 @@ LABEL_PHRASES = {
     "ratio_loyer_achat": ("le ratio loyer/achat", "un ratio loyer/achat"),
     "tendance_violences": ("la hausse des violences", "une hausse des violences"),
     "prix_evolution": ("la hausse des prix immobiliers", "une hausse des prix"),
+    "revenu_median": ("le revenu médian", "un revenu médian"),
+    "taux_pauvrete": ("le taux de pauvreté", "un taux de pauvreté"),
+    "taux_chomage_jeunes": ("le chômage des jeunes", "un chômage des jeunes"),
+    "ecart_salarial": ("l'écart salarial H/F", "un écart salarial"),
 }
 
 
@@ -267,6 +300,7 @@ async def get_correlations():
         "securite": {"cambriolages", "violences", "tendance_cambriolages", "tendance_violences"},
         "vote": {"participation", "vote_rn"},
         "demo": {"densite_pop", "age_maires"},
+        "precarite": {"revenu_median", "taux_pauvrete", "taux_chomage_jeunes", "ecart_salarial"},
     }
 
     def same_family(k1, k2):

@@ -62,6 +62,9 @@ EMPLOI :
 ENVIRONNEMENT :
 - desinfo_climat (media VARCHAR, is_public BOOL, is_info_continu BOOL, is_radio BOOL, couverture_climat FLOAT, cas_desinfo INT, desinfo_par_heure FLOAT) — 18 médias audiovisuels
 
+PRÉCARITÉ :
+- precarite (code_departement, nom_departement, revenu_median INT, taux_pauvrete FLOAT %, taux_rsa FLOAT %, taux_chomage_jeunes FLOAT %, salaire_femmes INT €/mois, salaire_hommes INT €/mois)
+
 POLITIQUE (élus) :
 - elus (type_mandat VARCHAR 'depute'|'senateur'|'maire', code_departement, nom, prenom, sexe 'M'|'F', date_naissance DATE, profession VARCHAR, date_debut_mandat DATE, circonscription VARCHAR)
   UNIQUE (type_mandat, nom, prenom, code_departement)
