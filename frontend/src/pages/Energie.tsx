@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import type { EnergiePoint } from '../lib/api'
 import {
@@ -296,6 +297,8 @@ export default function Energie() {
           </>
         )}
       </div>
+
+      <DataSource sources={[{label: "RTE éco2mix — ODRÉ", url: "https://www.data.gouv.fr/datasets/donnees-eco2mix-nationales-temps-reel-1"}, {label: "Consommation — ODRÉ"}]} />
     </div>
   )
 }

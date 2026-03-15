@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import type { DelinquanceItem } from '../lib/api'
 
@@ -129,6 +130,8 @@ export default function Securite() {
           </ResponsiveContainer>
         </div>
       )}
+
+      <DataSource sources={[{label: "Ministère de l'Intérieur — data.gouv.fr", url: "https://www.data.gouv.fr/datasets/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales"}]} />
     </div>
   )
 }

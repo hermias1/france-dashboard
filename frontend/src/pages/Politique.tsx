@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 
 interface MandatStats {
@@ -166,6 +167,8 @@ export default function Politique() {
           </ResponsiveContainer>
         </div>
       )}
+
+      <DataSource sources={[{label: "Répertoire National des Élus — Min. Intérieur", url: "https://www.data.gouv.fr/datasets/repertoire-national-des-elus-1"}]} />
     </div>
   )
 }

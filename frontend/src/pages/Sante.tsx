@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -96,6 +97,8 @@ export default function Sante() {
           </ResponsiveContainer>
         )}
       </div>
+
+      <DataSource sources={[{label: "DREES — APL Médecins généralistes", url: "https://www.data.gouv.fr/datasets/laccessibilite-potentielle-localisee-apl"}]} />
     </div>
   )
 }

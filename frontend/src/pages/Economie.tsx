@@ -3,6 +3,7 @@ import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
 import CorrelationScatter from '../components/CorrelationScatter'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import type { ImmobilierItem } from '../lib/api'
 
@@ -122,6 +123,8 @@ export default function Economie() {
       </div>
 
       <CorrelationScatter />
+
+      <DataSource sources={[{label: "DVF — data.gouv.fr", url: "https://www.data.gouv.fr/datasets/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2024"}, {label: "Loyers — Min. Transition écologique"}]} />
     </div>
   )
 }

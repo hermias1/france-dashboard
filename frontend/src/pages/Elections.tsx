@@ -4,6 +4,7 @@ import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
 import ElectionMap from '../components/ElectionMap'
 import TopListes from '../components/TopListes'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import type { ElectionResult, ParticipationResult } from '../lib/api'
 
@@ -92,6 +93,8 @@ export default function Elections() {
           />
         </div>
       )}
+
+      <DataSource sources={[{label: "Ministère de l'Intérieur — data.gouv.fr", url: "https://www.data.gouv.fr/datasets/resultats-des-elections-europeennes-du-9-juin-2024"}]} />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -103,6 +104,8 @@ export default function Education() {
           </ResponsiveContainer>
         )}
       </div>
+
+      <DataSource sources={[{label: "Ministère de l'Éducation nationale — data.gouv.fr", url: "https://www.data.gouv.fr/datasets/diplome-national-du-brevet-par-etablissement-1"}]} />
     </div>
   )
 }

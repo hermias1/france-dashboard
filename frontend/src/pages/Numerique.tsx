@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -99,6 +100,8 @@ export default function Numerique() {
           </ResponsiveContainer>
         )}
       </div>
+
+      <DataSource sources={[{label: "ANCT — France Très Haut Débit", url: "https://www.data.gouv.fr/datasets/indicateur-france-tres-haut-debit-etat-des-deploiements-de-la-fibre-optique-et-decommissionnement-du-cuivre"}]} />
     </div>
   )
 }

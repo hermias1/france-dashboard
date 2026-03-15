@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
+import DataSource from '../components/shared/DataSource'
 import { useApi } from '../hooks/useApi'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -120,6 +121,8 @@ export default function Transport() {
           </ResponsiveContainer>
         )}
       </div>
+
+      <DataSource sources={[{label: "ONISR — Accidents corporels — data.gouv.fr", url: "https://www.data.gouv.fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2024"}]} />
     </div>
   )
 }

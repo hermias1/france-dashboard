@@ -280,9 +280,17 @@ def title_for_correlation(ind_x, ind_y, r):
         return f"{ind_x['icon']} {ind_x['label'].split('(')[0].strip()} vs {ind_y['icon']} {ind_y['label'].split('(')[0].strip()}"
 
 
+import time as _time
+_cache: dict = {"data": None, "ts": 0}
+CACHE_TTL = 3600  # 1 hour
+
+
 @router.get("/correlations", response_model=list[Insight])
 async def get_correlations():
-    """Compute all pairwise correlations and return the most surprising ones."""
+    """Compute all pairwise correlations and return the most surprising ones. Cached for 1h."""
+    if _cache["data"] and (_time.time() - _cache["ts"]) < CACHE_TTL:
+        return _cache["data"]
+
     pool = await get_pool()
 
     # Fetch all indicator values by department
@@ -339,4 +347,7 @@ async def get_correlations():
 
     # Sort by absolute correlation (most surprising first)
     results.sort(key=lambda x: -abs(x.correlation))
-    return results[:12]
+    output = results[:12]
+    _cache["data"] = output
+    _cache["ts"] = _time.time()
+    return output
