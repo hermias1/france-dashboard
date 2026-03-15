@@ -257,9 +257,24 @@ def upsert_brevet(conn, df):
 
 
 def upsert_precarite(conn, df):
+    import math
     cols = ["code_departement", "nom_departement", "revenu_median", "taux_pauvrete",
             "taux_rsa", "taux_chomage_jeunes", "salaire_femmes", "salaire_hommes"]
-    values = df[cols].values.tolist()
+    # Replace NaN/inf with None for PostgreSQL
+    import numpy as np
+    raw = df[cols].values.tolist()
+    values = []
+    for row in raw:
+        clean = []
+        for v in row:
+            if v is None or (isinstance(v, float) and (np.isnan(v) or np.isinf(v))):
+                clean.append(None)
+            elif isinstance(v, float) and v == int(v):
+                clean.append(int(v))
+            else:
+                clean.append(v)
+        values.append(clean)
+
     with conn.cursor() as cur:
         execute_values(
             cur,
