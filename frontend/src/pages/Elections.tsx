@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import PageHeader from '../components/layout/PageHeader'
 import InsightCard from '../components/shared/InsightCard'
 import Ranking from '../components/shared/Ranking'
-import InteractiveMap from '../components/InteractiveMap'
+import ElectionMap from '../components/ElectionMap'
 import TopListes from '../components/TopListes'
 import { useApi } from '../hooks/useApi'
 import type { ElectionResult, ParticipationResult } from '../lib/api'
@@ -65,8 +65,11 @@ export default function Elections() {
       )}
 
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-        <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-4">Carte par département</h2>
-        <InteractiveMap />
+        <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-4">
+          Résultats par département — Européennes 2024
+        </h2>
+        <p className="text-xs text-gray-400 mb-3">Couleur = parti gagnant · Intensité = score du vainqueur</p>
+        <ElectionMap />
       </div>
 
       {resultats && (
