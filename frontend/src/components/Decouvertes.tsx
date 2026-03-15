@@ -49,6 +49,10 @@ export default function Decouvertes() {
           </div>
         ))}
       </div>
+      <p className="text-[10px] text-gray-400 mt-3">
+        ⚠️ Corrélation statistique ≠ causalité. Ces chiffres montrent des liens entre indicateurs au niveau départemental
+        mais n'impliquent pas de relation de cause à effet. Coefficient r de Pearson calculé sur 101 départements.
+      </p>
     </div>
   )
 }

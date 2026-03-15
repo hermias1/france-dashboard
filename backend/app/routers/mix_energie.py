@@ -54,14 +54,21 @@ class MixMoyen(BaseModel):
 @router.get("/mix/moyenne", response_model=MixMoyen)
 async def get_mix_moyenne():
     pool = await get_pool()
+    # Calculate as % of TOTAL PRODUCTION (not consumption) so it sums to ~100%
     row = await pool.fetchrow("""
+        WITH totals AS (
+            SELECT AVG(nucleaire_mw + eolien_mw + solaire_mw + hydraulique_mw + gaz_mw + bioenergies_mw) as production
+            FROM mix_energetique
+            WHERE nucleaire_mw > 0
+        )
         SELECT
-            ROUND(AVG(nucleaire_mw)::numeric / NULLIF(AVG(consommation_mw), 0) * 100, 1) as nucleaire_pct,
-            ROUND(AVG(eolien_mw)::numeric / NULLIF(AVG(consommation_mw), 0) * 100, 1) as eolien_pct,
-            ROUND(AVG(solaire_mw)::numeric / NULLIF(AVG(consommation_mw), 0) * 100, 1) as solaire_pct,
-            ROUND(AVG(hydraulique_mw)::numeric / NULLIF(AVG(consommation_mw), 0) * 100, 1) as hydraulique_pct,
-            ROUND(AVG(gaz_mw)::numeric / NULLIF(AVG(consommation_mw), 0) * 100, 1) as gaz_pct,
-            ROUND(AVG(bioenergies_mw)::numeric / NULLIF(AVG(consommation_mw), 0) * 100, 1) as bioenergies_pct
+            ROUND(AVG(nucleaire_mw)::numeric / NULLIF((SELECT production FROM totals), 0) * 100, 1) as nucleaire_pct,
+            ROUND(AVG(eolien_mw)::numeric / NULLIF((SELECT production FROM totals), 0) * 100, 1) as eolien_pct,
+            ROUND(AVG(solaire_mw)::numeric / NULLIF((SELECT production FROM totals), 0) * 100, 1) as solaire_pct,
+            ROUND(AVG(hydraulique_mw)::numeric / NULLIF((SELECT production FROM totals), 0) * 100, 1) as hydraulique_pct,
+            ROUND(AVG(gaz_mw)::numeric / NULLIF((SELECT production FROM totals), 0) * 100, 1) as gaz_pct,
+            ROUND(AVG(bioenergies_mw)::numeric / NULLIF((SELECT production FROM totals), 0) * 100, 1) as bioenergies_pct
         FROM mix_energetique
+        WHERE nucleaire_mw > 0
     """)
     return MixMoyen(**dict(row))

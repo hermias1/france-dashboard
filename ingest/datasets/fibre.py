@@ -14,7 +14,7 @@ def parse_fibre(df: pd.DataFrame) -> pd.DataFrame:
         locaux_ftth=("locaux_ftth", "sum"),
     ).reset_index()
     result["taux_couverture"] = result.apply(
-        lambda r: round(r["locaux_ftth"] / r["locaux_total"] * 100, 2) if r["locaux_total"] > 0 else 0.0,
+        lambda r: min(100.0, round(r["locaux_ftth"] / r["locaux_total"] * 100, 2)) if r["locaux_total"] > 0 else 0.0,
         axis=1,
     )
     return result

@@ -56,8 +56,9 @@ INDICATORS = [
         "icon": "🗳️",
         "sql": """SELECT code_geo as dept,
                   votants::numeric / NULLIF(inscrits, 0) * 100 as val
-                  FROM elections WHERE scrutin = 'europeennes-2024' AND niveau = 'departement'
-                  AND liste = (SELECT liste FROM elections WHERE scrutin='europeennes-2024' AND niveau='departement' LIMIT 1)""",
+                  FROM (SELECT DISTINCT ON (code_geo) code_geo, inscrits, votants
+                        FROM elections WHERE scrutin = 'europeennes-2024' AND niveau = 'departement'
+                        ORDER BY code_geo) sub""",
         "higher_is": "civique",
     },
     {
