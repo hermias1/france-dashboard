@@ -5,13 +5,12 @@ def parse_french_int(val):
     """Parse French-formatted integer: '24 810 ' → 24810."""
     if pd.isna(val):
         return None
-    s = str(val).replace("\u202f", "").replace("\xa0", "").replace(" ", "").strip()
-    if not s:
+    s = str(val).replace("\u202f", "").replace("\xa0", "").replace("\x80", "").replace("€", "").replace(" ", "").strip()
+    # Keep only digits
+    digits = ''.join(c for c in s if c.isdigit())
+    if not digits:
         return None
-    try:
-        return int(s)
-    except ValueError:
-        return None
+    return int(digits)
 
 
 def parse_french_pct(val):
