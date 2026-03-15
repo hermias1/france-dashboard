@@ -1,36 +1,33 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import KPIBar from './components/KPIBar'
-import InteractiveMap from './components/InteractiveMap'
-import EnergieSection from './components/EnergieSection'
-import DelinquanceSection from './components/DelinquanceSection'
-import ImmobilierSection from './components/ImmobilierSection'
-import QuestionBar from './components/QuestionBar'
-import CorrelationScatter from './components/CorrelationScatter'
+import MainLayout from './layouts/MainLayout'
+import Home from './pages/Home'
+import Elections from './pages/Elections'
+import Economie from './pages/Economie'
+import Securite from './pages/Securite'
+import Energie from './pages/Energie'
+import ComingSoon from './pages/ComingSoon'
 
 const queryClient = new QueryClient()
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-[#fafafa]">
-        <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">État de la France</h1>
-          <KPIBar />
-        </header>
-        <main className="max-w-6xl mx-auto px-6 py-8">
-          <QuestionBar />
-          <InteractiveMap />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DelinquanceSection />
-            <ImmobilierSection />
-          </div>
-          <CorrelationScatter />
-          <EnergieSection />
-          <footer className="text-center text-xs text-gray-400 mt-12 pb-8">
-            Données issues de data.gouv.fr — Projet open source
-          </footer>
-        </main>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route index element={<Home />} />
+            <Route path="elections" element={<Elections />} />
+            <Route path="economie" element={<Economie />} />
+            <Route path="securite" element={<Securite />} />
+            <Route path="energie" element={<Energie />} />
+            <Route path="sante" element={<ComingSoon title="Santé" description="Dépenses de santé, déserts médicaux, autonomie" />} />
+            <Route path="education" element={<ComingSoon title="Éducation" description="Résultats du brevet, pression pesticides autour des écoles" />} />
+            <Route path="transport" element={<ComingSoon title="Transport" description="Accidents de la route, mobilité" />} />
+            <Route path="numerique" element={<ComingSoon title="Numérique" description="Couverture fibre optique, accès internet" />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   )
 }
