@@ -11,6 +11,8 @@ import Education from './pages/Education'
 import Numerique from './pages/Numerique'
 import Territoire from './pages/Territoire'
 import ComingSoon from './pages/ComingSoon'
+import Versus from './pages/Versus'
+import Quiz from './pages/Quiz'
 
 const queryClient = new QueryClient()
 
@@ -30,6 +32,8 @@ export default function App() {
             <Route path="transport" element={<Transport />} />
             <Route path="numerique" element={<Numerique />} />
             <Route path="territoire/:code" element={<Territoire />} />
+            <Route path="versus" element={<Versus />} />
+            <Route path="quiz" element={<Quiz />} />
           </Route>
         </Routes>
       </BrowserRouter>

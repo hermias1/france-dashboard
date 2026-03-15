@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import { useApi } from '../hooks/useApi'
 import type { DelinquanceItem, ImmobilierItem, ParticipationResult } from '../lib/api'
@@ -36,6 +37,7 @@ const RED_HIGH: [number, number, number] = [185, 28, 28]
 
 export default function InteractiveMap() {
   const [indicator, setIndicator] = useState<Indicator>('immobilier')
+  const navigate = useNavigate()
 
   const { data: immoData } = useApi<ImmobilierItem[]>('map-immobilier', API_PATHS.immobilier)
   const { data: cambData } = useApi<DelinquanceItem[]>('map-cambriolages', API_PATHS.cambriolages)
@@ -121,8 +123,9 @@ export default function InteractiveMap() {
                       }
                     }}
                     onMouseLeave={() => setHovered(null)}
+                    onClick={() => navigate(`/territoire/${code}`)}
                     style={{
-                      hover: { opacity: 0.8, outline: 'none' },
+                      hover: { opacity: 0.8, outline: 'none', cursor: 'pointer' },
                       default: { outline: 'none' },
                       pressed: { outline: 'none' },
                     }}

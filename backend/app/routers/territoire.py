@@ -12,6 +12,7 @@ class Indicateur(BaseModel):
     comparaison: str  # "au-dessus", "en-dessous", "dans la moyenne"
     ecart_pct: float  # écart en % par rapport à la moyenne nationale
     icone: str
+    score: int = 50  # normalized 0-100 (50=average, 100=best)
 
 
 class TerritoireProfile(BaseModel):
@@ -19,6 +20,7 @@ class TerritoireProfile(BaseModel):
     nom: str
     type: str  # "departement"
     indicateurs: list[Indicateur]
+    score_global: int = 50  # average of all indicator scores
 
 
 @router.get("/search")
@@ -161,11 +163,23 @@ async def get_departement_profile(code: str):
             icone="🎓",
         ))
 
+    # Compute normalized scores (0-100, 50=average)
+    for ind in indicateurs:
+        inverse = ind.label in ("Cambriolages", "Accidents route")
+        ecart = ind.ecart_pct
+        if inverse:
+            ecart = -ecart
+        # Map ecart to 0-100: -100% → 0, 0% → 50, +100% → 100
+        ind.score = max(0, min(100, int(50 + ecart * 0.5)))
+
+    score_global = int(sum(i.score for i in indicateurs) / len(indicateurs)) if indicateurs else 50
+
     return TerritoireProfile(
         code=dept["code"],
         nom=dept["nom"],
         type="departement",
         indicateurs=indicateurs,
+        score_global=score_global,
     )
 
 

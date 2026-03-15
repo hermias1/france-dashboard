@@ -2,6 +2,8 @@ import { NavLink } from 'react-router-dom'
 
 const MAIN_NAV = [
   { path: '/', label: 'Accueil', icon: '🏠' },
+  { path: '/versus', label: 'Comparer', icon: '⚔️' },
+  { path: '/quiz', label: 'Quiz', icon: '🎯' },
 ]
 
 const THEMES = [

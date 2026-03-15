@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import { useApi } from '../hooks/useApi'
 import type { ElectionResult, ParticipationResult } from '../lib/api'
@@ -74,6 +75,7 @@ interface DeptScore {
 export default function ElectionMap() {
   const [tooltip, setTooltip] = useState<DeptResult | DeptScore | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('winner')
+  const navigate = useNavigate()
 
   const { data } = useApi<ElectionResult[]>(
     'elections-dept-map',
@@ -226,8 +228,9 @@ export default function ElectionMap() {
                   strokeWidth={0.5}
                   onMouseEnter={() => hoverData && setTooltip(hoverData)}
                   onMouseLeave={() => setTooltip(null)}
+                  onClick={() => navigate(`/territoire/${code}`)}
                   style={{
-                    hover: { strokeWidth: 1.5, stroke: '#333', outline: 'none' },
+                    hover: { strokeWidth: 1.5, stroke: '#333', outline: 'none', cursor: 'pointer' },
                   }}
                 />
               )
