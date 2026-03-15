@@ -175,6 +175,63 @@ def upsert_apl_medecins(conn, df):
     conn.commit()
 
 
+def upsert_elus(conn, df):
+    cols = ["type_mandat", "code_departement", "nom", "prenom", "sexe",
+            "date_naissance", "profession", "date_debut_mandat", "circonscription"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO elus (type_mandat, code_departement, nom, prenom, sexe,
+                 date_naissance, profession, date_debut_mandat, circonscription)
+               VALUES %s
+               ON CONFLICT (type_mandat, nom, prenom, code_departement) DO UPDATE SET
+                 sexe = EXCLUDED.sexe,
+                 date_naissance = EXCLUDED.date_naissance,
+                 profession = EXCLUDED.profession,
+                 date_debut_mandat = EXCLUDED.date_debut_mandat,
+                 circonscription = EXCLUDED.circonscription""",
+            values,
+        )
+    conn.commit()
+
+
+def upsert_chomage(conn, df):
+    cols = ["date", "code_departement", "nom_departement", "categorie", "nombre"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO chomage (date, code_departement, nom_departement, categorie, nombre)
+               VALUES %s
+               ON CONFLICT (date, code_departement, categorie) DO UPDATE SET
+                 nom_departement = EXCLUDED.nom_departement,
+                 nombre = EXCLUDED.nombre""",
+            values,
+        )
+    conn.commit()
+
+
+def upsert_desinfo_climat(conn, df):
+    cols = ["media", "is_public", "is_info_continu", "is_radio", "couverture_climat", "cas_desinfo", "desinfo_par_heure"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO desinfo_climat (media, is_public, is_info_continu, is_radio, couverture_climat, cas_desinfo, desinfo_par_heure)
+               VALUES %s
+               ON CONFLICT (media) DO UPDATE SET
+                 is_public = EXCLUDED.is_public,
+                 is_info_continu = EXCLUDED.is_info_continu,
+                 is_radio = EXCLUDED.is_radio,
+                 couverture_climat = EXCLUDED.couverture_climat,
+                 cas_desinfo = EXCLUDED.cas_desinfo,
+                 desinfo_par_heure = EXCLUDED.desinfo_par_heure""",
+            values,
+        )
+    conn.commit()
+
+
 def upsert_brevet(conn, df):
     cols = ["session", "code_departement", "nom_departement", "nb_etablissements",
             "inscrits", "presents", "admis", "taux_reussite"]

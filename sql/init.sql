@@ -124,6 +124,44 @@ CREATE TABLE IF NOT EXISTS apl_medecins (
     UNIQUE (code_commune)
 );
 
+CREATE TABLE IF NOT EXISTS elus (
+    id SERIAL PRIMARY KEY,
+    type_mandat VARCHAR(20) NOT NULL,
+    code_departement VARCHAR(3),
+    nom VARCHAR(100),
+    prenom VARCHAR(100),
+    sexe VARCHAR(1),
+    date_naissance DATE,
+    profession VARCHAR(200),
+    date_debut_mandat DATE,
+    circonscription VARCHAR(200),
+    UNIQUE (type_mandat, nom, prenom, code_departement)
+);
+CREATE INDEX IF NOT EXISTS idx_elus_type ON elus(type_mandat);
+CREATE INDEX IF NOT EXISTS idx_elus_dept ON elus(code_departement);
+
+CREATE TABLE IF NOT EXISTS chomage (
+    id SERIAL PRIMARY KEY,
+    date VARCHAR(10) NOT NULL,
+    code_departement VARCHAR(3) NOT NULL,
+    nom_departement VARCHAR(100),
+    categorie VARCHAR(10),
+    nombre INTEGER,
+    UNIQUE (date, code_departement, categorie)
+);
+CREATE INDEX IF NOT EXISTS idx_chomage_dept ON chomage(code_departement, date);
+
+CREATE TABLE IF NOT EXISTS desinfo_climat (
+    id SERIAL PRIMARY KEY,
+    media VARCHAR(100) NOT NULL UNIQUE,
+    is_public BOOLEAN,
+    is_info_continu BOOLEAN,
+    is_radio BOOLEAN,
+    couverture_climat FLOAT,
+    cas_desinfo INTEGER,
+    desinfo_par_heure FLOAT
+);
+
 CREATE TABLE IF NOT EXISTS ingestion_runs (
     id SERIAL PRIMARY KEY,
     dataset_id VARCHAR(100) NOT NULL,

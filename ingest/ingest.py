@@ -5,7 +5,8 @@ import requests
 from db import (get_connection, upsert_regions, upsert_departements, upsert_elections,
                 upsert_energie, upsert_delinquance, upsert_immobilier,
                 upsert_accidents, upsert_fibre, upsert_loyers, upsert_brevet,
-                upsert_apl_medecins)
+                upsert_apl_medecins, upsert_elus, upsert_chomage,
+                upsert_desinfo_climat)
 from datasets.geo import parse_regions, parse_departements
 from datasets.elections import parse_elections_by_region, parse_elections_by_departement
 from datasets.energie import parse_energie
@@ -17,6 +18,9 @@ from datasets.fibre import parse_fibre
 from datasets.loyers import parse_loyers
 from datasets.brevet import parse_brevet
 from datasets.apl_medecins import parse_apl_medecins
+from datasets.elus import parse_deputes, parse_senateurs, parse_maires
+from datasets.chomage import parse_chomage
+from datasets.desinfo_climat import parse_desinfo_climat
 
 GEO_SOURCES = {
     "regions": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_region_2026.csv",
@@ -43,6 +47,15 @@ FIBRE_SOURCE = "https://static.data.gouv.fr/resources/indicateur-france-tres-hau
 LOYERS_SOURCE = "https://static.data.gouv.fr/resources/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025/20251211-145010/pred-app-mef-dhup.csv"
 BREVET_SOURCE = "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-dnb-par-etablissement/exports/csv?use_labels=true"
 APL_SOURCE = "https://data.drees.solidarites-sante.gouv.fr/api/v2/catalog/datasets/530_l-accessibilite-potentielle-localisee-apl/attachments/indicateur_d_accessibilite_potentielle_localisee_apl_aux_medecins_generalistes_xlsx"
+
+CHOMAGE_SOURCE = "https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_defm_stock_regions_brut_mens/exports/csv?use_labels=true&limit=50000"
+DESINFO_CLIMAT_SOURCE = "https://static.data.gouv.fr/resources/etat-de-la-mesinformation-et-desinformation-climatique-dans-les-medias-audiovisuels-en-2025/20251105-151339/misinformation-per-media.csv"
+
+ELUS_SOURCES = {
+    "deputes": "https://static.data.gouv.fr/resources/repertoire-national-des-elus-1/20251223-104106/elus-deputes-dep.csv",
+    "senateurs": "https://static.data.gouv.fr/resources/repertoire-national-des-elus-1/20251223-104017/elus-senateurs-sen.csv",
+    "maires": "https://static.data.gouv.fr/resources/repertoire-national-des-elus-1/20251223-104211/elus-maires-mai.csv",
+}
 
 
 def download_csv(url: str, sep: str = ",", encoding: str = "utf-8") -> pd.DataFrame:
@@ -206,6 +219,57 @@ def run_apl():
         conn.close()
 
 
+def run_elus():
+    conn = get_connection()
+    try:
+        parsers = [
+            ("deputes", parse_deputes),
+            ("senateurs", parse_senateurs),
+            ("maires", parse_maires),
+        ]
+        for name, parser in parsers:
+            print(f"Ingesting elus ({name})...")
+            url = ELUS_SOURCES[name]
+            print(f"  Downloading {url}")
+            resp = requests.get(url)
+            resp.raise_for_status()
+            text = resp.content.decode("utf-8")
+            df = parser(text)
+            upsert_elus(conn, df)
+            print(f"  → {len(df)} rows")
+    finally:
+        conn.close()
+
+
+def run_chomage():
+    conn = get_connection()
+    try:
+        print("Ingesting chomage...")
+        raw = download_csv(CHOMAGE_SOURCE, sep=";")
+        df = parse_chomage(raw)
+        upsert_chomage(conn, df)
+        print(f"  → {len(df)} rows")
+    finally:
+        conn.close()
+
+
+def run_desinfo_climat():
+    conn = get_connection()
+    try:
+        print("Ingesting desinfo climat...")
+        print(f"  Downloading {DESINFO_CLIMAT_SOURCE}")
+        resp = requests.get(DESINFO_CLIMAT_SOURCE)
+        resp.raise_for_status()
+        # Handle BOM
+        text = resp.content.decode("utf-8-sig")
+        raw = pd.read_csv(io.StringIO(text), sep=";")
+        df = parse_desinfo_climat(raw)
+        upsert_desinfo_climat(conn, df)
+        print(f"  → {len(df)} rows")
+    finally:
+        conn.close()
+
+
 if __name__ == "__main__":
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
     if target in ("geo", "all"):
@@ -230,4 +294,10 @@ if __name__ == "__main__":
         run_brevet()
     if target in ("apl", "all"):
         run_apl()
+    if target in ("chomage", "all"):
+        run_chomage()
+    if target in ("desinfo_climat", "all"):
+        run_desinfo_climat()
+    if target in ("elus", "all"):
+        run_elus()
     print("Done.")

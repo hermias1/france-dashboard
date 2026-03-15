@@ -15,6 +15,7 @@ const THEMES = [
   { path: '/education', label: 'Éducation', icon: '🎓' },
   { path: '/transport', label: 'Transport', icon: '🚗' },
   { path: '/numerique', label: 'Numérique', icon: '📡' },
+  { path: '/environnement', label: 'Environnement', icon: '🌍' },
 ]
 
 export default function Sidebar() {

@@ -53,7 +53,20 @@ FIBRE :
 - brevet (session INT, code_departement, nom_departement, nb_etablissements, inscrits, presents, admis, taux_reussite)
 
 SANTÉ :
-- apl_medecins (code_commune, nom_commune, code_departement, apl_medecins_generalistes FLOAT, population INT) — APL = consultations accessibles pour 100K hab"""
+- apl_medecins (code_commune, nom_commune, code_departement, apl_medecins_generalistes FLOAT, population INT) — APL = consultations accessibles pour 100K hab
+
+EMPLOI :
+- chomage (date VARCHAR ex '2024-12', code_departement, nom_departement, categorie='ABC', nombre INT) — demandeurs d'emploi fin de mois par département
+  JOIN: code_departement = departements.code
+
+ENVIRONNEMENT :
+- desinfo_climat (media VARCHAR, is_public BOOL, is_info_continu BOOL, is_radio BOOL, couverture_climat FLOAT, cas_desinfo INT, desinfo_par_heure FLOAT) — 18 médias audiovisuels
+
+POLITIQUE (élus) :
+- elus (type_mandat VARCHAR 'depute'|'senateur'|'maire', code_departement, nom, prenom, sexe 'M'|'F', date_naissance DATE, profession VARCHAR, date_debut_mandat DATE, circonscription VARCHAR)
+  UNIQUE (type_mandat, nom, prenom, code_departement)
+  JOIN: code_departement = departements.code
+  Age: EXTRACT(YEAR FROM AGE(date_naissance))"""
 
 MAX_STEPS = 5
 
