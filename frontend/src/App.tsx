@@ -12,6 +12,7 @@ import Numerique from './pages/Numerique'
 import Territoire from './pages/Territoire'
 import Sante from './pages/Sante'
 import Environnement from './pages/Environnement'
+import Politique from './pages/Politique'
 import Versus from './pages/Versus'
 import Quiz from './pages/Quiz'
 
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="transport" element={<Transport />} />
             <Route path="numerique" element={<Numerique />} />
             <Route path="environnement" element={<Environnement />} />
+            <Route path="politique" element={<Politique />} />
             <Route path="territoire/:code" element={<Territoire />} />
             <Route path="versus" element={<Versus />} />
             <Route path="quiz" element={<Quiz />} />

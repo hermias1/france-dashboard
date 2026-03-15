@@ -25,4 +25,13 @@ async def get_desinfo_climat():
            FROM desinfo_climat
            ORDER BY cas_desinfo DESC NULLS LAST"""
     )
-    return [DesinfoClimat(**dict(r)) for r in rows]
+    import math
+    results = []
+    for r in rows:
+        d = dict(r)
+        # Replace NaN with None for JSON serialization
+        for k, v in d.items():
+            if isinstance(v, float) and math.isnan(v):
+                d[k] = None
+        results.append(DesinfoClimat(**d))
+    return results

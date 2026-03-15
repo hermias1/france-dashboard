@@ -178,6 +178,8 @@ def upsert_apl_medecins(conn, df):
 def upsert_elus(conn, df):
     cols = ["type_mandat", "code_departement", "nom", "prenom", "sexe",
             "date_naissance", "profession", "date_debut_mandat", "circonscription"]
+    # Deduplicate on unique key before insert
+    df = df.drop_duplicates(subset=["type_mandat", "nom", "prenom", "code_departement"])
     values = df[cols].values.tolist()
     with conn.cursor() as cur:
         execute_values(

@@ -4,9 +4,9 @@ import pandas as pd
 def parse_chomage(df: pd.DataFrame) -> pd.DataFrame:
     # Filter for aggregate rows only
     df = df[
-        (df["Sexe"] == "Ensemble")
-        & (df["Tranche d'âge"] == "Ensemble")
-        & (df["Ancienneté"] == "Ensemble")
+        (df["Sexe"].isin(["Ensemble", "Total"]))
+        & (df["Tranche d'âge"].isin(["Ensemble", "Total"]))
+        & (df["Ancienneté"].isin(["Ensemble", "Total"]))
         & (df["Catégorie"] == "ABC")
     ].copy()
 
@@ -17,9 +17,11 @@ def parse_chomage(df: pd.DataFrame) -> pd.DataFrame:
         if mask.any():
             df = df[mask]
 
-    # Drop rows without département code
+    # Drop rows without real département code (filter out "Total" and blanks)
     df = df.dropna(subset=["Code département"])
-    df = df[df["Code département"].astype(str).str.strip() != ""]
+    df["Code département"] = df["Code département"].astype(str).str.strip()
+    df = df[~df["Code département"].isin(["", "Total", "nan"])]
+    df = df[df["Code département"].str.len() <= 3]
 
     # Build result
     result = pd.DataFrame()

@@ -16,6 +16,7 @@ const THEMES = [
   { path: '/transport', label: 'Transport', icon: '🚗' },
   { path: '/numerique', label: 'Numérique', icon: '📡' },
   { path: '/environnement', label: 'Environnement', icon: '🌍' },
+  { path: '/politique', label: 'Politique', icon: '🏛️' },
 ]
 
 export default function Sidebar() {
