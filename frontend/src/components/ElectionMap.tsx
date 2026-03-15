@@ -189,7 +189,7 @@ export default function ElectionMap() {
 
       <ComposableMap
         projection="geoMercator"
-        projectionConfig={{ center: [2.8, 46.0], scale: 2500 }}
+        projectionConfig={{ center: [2.8, 46.2], scale: 2200 }}
         width={600}
         height={550}
       >
