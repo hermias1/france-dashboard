@@ -4,7 +4,8 @@ import pandas as pd
 import requests
 from db import (get_connection, upsert_regions, upsert_departements, upsert_elections,
                 upsert_energie, upsert_delinquance, upsert_immobilier,
-                upsert_accidents, upsert_fibre, upsert_loyers, upsert_brevet)
+                upsert_accidents, upsert_fibre, upsert_loyers, upsert_brevet,
+                upsert_apl_medecins)
 from datasets.geo import parse_regions, parse_departements
 from datasets.elections import parse_elections_by_region, parse_elections_by_departement
 from datasets.energie import parse_energie
@@ -15,6 +16,7 @@ from datasets.accidents import parse_accidents
 from datasets.fibre import parse_fibre
 from datasets.loyers import parse_loyers
 from datasets.brevet import parse_brevet
+from datasets.apl_medecins import parse_apl_medecins
 
 GEO_SOURCES = {
     "regions": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_region_2026.csv",
@@ -40,6 +42,7 @@ ACCIDENTS_SOURCE = "https://static.data.gouv.fr/resources/bases-de-donnees-annue
 FIBRE_SOURCE = "https://static.data.gouv.fr/resources/indicateur-france-tres-haut-debit-etat-des-deploiements-de-la-fibre-optique-et-decommissionnement-du-cuivre/20251216-132516/indicateur-france-tres-haut-debit-ftth-cu.csv"
 LOYERS_SOURCE = "https://static.data.gouv.fr/resources/carte-des-loyers-indicateurs-de-loyers-dannonce-par-commune-en-2025/20251211-145010/pred-app-mef-dhup.csv"
 BREVET_SOURCE = "https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-dnb-par-etablissement/exports/csv?use_labels=true"
+APL_SOURCE = "https://data.drees.solidarites-sante.gouv.fr/api/v2/catalog/datasets/530_l-accessibilite-potentielle-localisee-apl/attachments/indicateur_d_accessibilite_potentielle_localisee_apl_aux_medecins_generalistes_xlsx"
 
 
 def download_csv(url: str, sep: str = ",", encoding: str = "utf-8") -> pd.DataFrame:
@@ -187,6 +190,21 @@ def run_brevet():
         conn.close()
 
 
+def run_apl():
+    conn = get_connection()
+    try:
+        print("Ingesting APL médecins...")
+        print(f"  Downloading APL médecins XLSX...")
+        resp = requests.get(APL_SOURCE)
+        resp.raise_for_status()
+        df = pd.read_excel(io.BytesIO(resp.content), sheet_name='APL 2023', skiprows=9)
+        parsed = parse_apl_medecins(df)
+        upsert_apl_medecins(conn, parsed)
+        print(f"  → {len(parsed)} rows")
+    finally:
+        conn.close()
+
+
 if __name__ == "__main__":
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
     if target in ("geo", "all"):
@@ -209,4 +227,6 @@ if __name__ == "__main__":
         run_loyers()
     if target in ("brevet", "all"):
         run_brevet()
+    if target in ("apl", "all"):
+        run_apl()
     print("Done.")

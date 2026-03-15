@@ -164,6 +164,17 @@ def upsert_loyers(conn, df):
     conn.commit()
 
 
+def upsert_apl_medecins(conn, df):
+    cols = ["code_commune", "nom_commune", "code_departement", "apl_medecins_generalistes", "population"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(cur,
+            """INSERT INTO apl_medecins (code_commune, nom_commune, code_departement, apl_medecins_generalistes, population) VALUES %s
+               ON CONFLICT (code_commune) DO UPDATE SET apl_medecins_generalistes = EXCLUDED.apl_medecins_generalistes, population = EXCLUDED.population""",
+            values)
+    conn.commit()
+
+
 def upsert_brevet(conn, df):
     cols = ["session", "code_departement", "nom_departement", "nb_etablissements",
             "inscrits", "presents", "admis", "taux_reussite"]

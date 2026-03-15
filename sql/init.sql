@@ -114,6 +114,16 @@ CREATE TABLE IF NOT EXISTS brevet (
     UNIQUE (session, code_departement)
 );
 
+CREATE TABLE IF NOT EXISTS apl_medecins (
+    id SERIAL PRIMARY KEY,
+    code_commune VARCHAR(5) NOT NULL,
+    nom_commune VARCHAR(200),
+    code_departement VARCHAR(3),
+    apl_medecins_generalistes FLOAT,
+    population INTEGER,
+    UNIQUE (code_commune)
+);
+
 CREATE TABLE IF NOT EXISTS ingestion_runs (
     id SERIAL PRIMARY KEY,
     dataset_id VARCHAR(100) NOT NULL,
@@ -133,3 +143,4 @@ CREATE INDEX IF NOT EXISTS idx_accidents_dept ON accidents(code_departement);
 CREATE INDEX IF NOT EXISTS idx_fibre_dept ON fibre(code_departement);
 CREATE INDEX IF NOT EXISTS idx_loyers_dept ON loyers(code_departement);
 CREATE INDEX IF NOT EXISTS idx_brevet_dept ON brevet(code_departement, session);
+CREATE INDEX IF NOT EXISTS idx_apl_dept ON apl_medecins(code_departement);

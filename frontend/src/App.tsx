@@ -10,7 +10,7 @@ import Transport from './pages/Transport'
 import Education from './pages/Education'
 import Numerique from './pages/Numerique'
 import Territoire from './pages/Territoire'
-import ComingSoon from './pages/ComingSoon'
+import Sante from './pages/Sante'
 import Versus from './pages/Versus'
 import Quiz from './pages/Quiz'
 
@@ -27,7 +27,7 @@ export default function App() {
             <Route path="economie" element={<Economie />} />
             <Route path="securite" element={<Securite />} />
             <Route path="energie" element={<Energie />} />
-            <Route path="sante" element={<ComingSoon title="Santé" description="Dépenses de santé, déserts médicaux, autonomie" />} />
+            <Route path="sante" element={<Sante />} />
             <Route path="education" element={<Education />} />
             <Route path="transport" element={<Transport />} />
             <Route path="numerique" element={<Numerique />} />
