@@ -115,6 +115,80 @@ INDICATORS = [
                   FROM elus WHERE type_mandat = 'maire' GROUP BY code_departement""",
         "higher_is": "paritaire",
     },
+    # === DERIVED INDICATORS (computed from existing data) ===
+    {
+        "key": "tendance_cambriolages",
+        "label": "Évolution cambriolages 2016→2024 (%)",
+        "icon": "📉",
+        "sql": """SELECT d24.code_departement as dept,
+                  ROUND(((d24.nombre - d16.nombre)::numeric / NULLIF(d16.nombre, 0)) * 100, 1) as val
+                  FROM delinquance d24
+                  JOIN delinquance d16 ON d24.code_departement = d16.code_departement
+                    AND d16.annee = 2016 AND d16.indicateur = 'Cambriolages de logement'
+                  WHERE d24.annee = 2024 AND d24.indicateur = 'Cambriolages de logement'
+                    AND d16.nombre > 0""",
+        "higher_is": "en hausse",
+    },
+    {
+        "key": "densite_pop",
+        "label": "Densité population (hab/km²)",
+        "icon": "🏙️",
+        "sql": """SELECT code_departement as dept,
+                  population::numeric / NULLIF(
+                    (SELECT COUNT(DISTINCT code_commune) FROM fibre f WHERE f.code_departement = d.code_departement), 0
+                  ) as val
+                  FROM (SELECT DISTINCT ON (code_departement) code_departement, population
+                        FROM delinquance WHERE annee = 2024 AND population > 0
+                        ORDER BY code_departement) d""",
+        "higher_is": "dense",
+    },
+    {
+        "key": "age_maires",
+        "label": "Âge moyen maires (ans)",
+        "icon": "👴",
+        "sql": """SELECT code_departement as dept,
+                  AVG(EXTRACT(YEAR FROM AGE(date_naissance))) as val
+                  FROM elus WHERE type_mandat = 'maire' AND date_naissance IS NOT NULL
+                  GROUP BY code_departement
+                  HAVING COUNT(*) >= 10""",
+        "higher_is": "âgé",
+    },
+    {
+        "key": "ratio_loyer_achat",
+        "label": "Ratio loyer/achat (années)",
+        "icon": "🏠",
+        "sql": """SELECT l.code_departement as dept,
+                  AVG(i.prix_m2_moyen)::numeric / NULLIF(AVG(l.loyer_m2_moyen) * 12, 0) as val
+                  FROM loyers l
+                  JOIN immobilier i ON LEFT(i.code_commune, 2) = l.code_departement AND i.annee = 2024
+                  WHERE l.loyer_m2_moyen > 0 AND i.prix_m2_moyen > 0
+                  GROUP BY l.code_departement""",
+        "higher_is": "long à rentabiliser",
+    },
+    {
+        "key": "tendance_violences",
+        "label": "Évolution violences 2016→2024 (%)",
+        "icon": "📈",
+        "sql": """SELECT d24.code_departement as dept,
+                  ROUND(((d24.nombre - d16.nombre)::numeric / NULLIF(d16.nombre, 0)) * 100, 1) as val
+                  FROM delinquance d24
+                  JOIN delinquance d16 ON d24.code_departement = d16.code_departement
+                    AND d16.annee = 2016 AND d16.indicateur = 'Violences physiques hors cadre familial'
+                  WHERE d24.annee = 2024 AND d24.indicateur = 'Violences physiques hors cadre familial'
+                    AND d16.nombre > 0""",
+        "higher_is": "en hausse",
+    },
+    {
+        "key": "prix_evolution",
+        "label": "Évolution prix immo 2018→2024 (%)",
+        "icon": "📈",
+        "sql": """SELECT i24.dept, ROUND(((i24.prix - i18.prix)::numeric / NULLIF(i18.prix, 0)) * 100, 1) as val
+                  FROM (SELECT LEFT(code_commune, 2) as dept, AVG(prix_m2_moyen) as prix FROM immobilier WHERE annee = 2024 AND prix_m2_moyen > 0 GROUP BY LEFT(code_commune, 2)) i24
+                  JOIN (SELECT LEFT(code_commune, 2) as dept, AVG(prix_m2_moyen) as prix FROM immobilier WHERE annee = 2018 AND prix_m2_moyen > 0 GROUP BY LEFT(code_commune, 2)) i18
+                  ON i24.dept = i18.dept
+                  WHERE i18.prix > 0""",
+        "higher_is": "en hausse",
+    },
 ]
 
 

@@ -23,7 +23,7 @@ NOTE: la table communes EXISTE mais est VIDE. Pour les noms de départements, JO
 
 ÉLECTIONS :
 - elections (scrutin, niveau, code_geo, libelle_geo, inscrits, votants, exprimes, liste, nuance, voix, pct_voix_exprimes)
-  scrutin: 'europeennes-2024' ou 'presidentielle-2022-t1'
+  scrutin: 'europeennes-2024', 'presidentielle-2022-t1' ou 'legislatives-2024-t1'
   niveau: 'region' ou 'departement'
   JOIN: code_geo = departements.code
   Participation = votants::numeric / NULLIF(inscrits, 0) * 100
@@ -37,7 +37,7 @@ SÉCURITÉ :
   JOIN: code_departement = departements.code
 
 IMMOBILIER (par commune, agrège par département avec LEFT(code_commune,2)) :
-- immobilier (code_commune VARCHAR, annee=2024, nb_mutations, prix_moyen, prix_m2_moyen, surface_moyenne)
+- immobilier (code_commune VARCHAR, annee INT 2018-2024, nb_mutations, prix_moyen, prix_m2_moyen, surface_moyenne)
   Pour département: LEFT(code_commune, 2) = departements.code
 
 LOYERS (par commune) :

@@ -13,6 +13,7 @@ from datasets.energie import parse_energie
 from datasets.delinquance import parse_delinquance_departement
 from datasets.immobilier import parse_immobilier_communes
 from datasets.presidentielle import parse_presidentielle_raw
+from datasets.legislatives import parse_legislatives_raw
 from datasets.accidents import parse_accidents
 from datasets.fibre import parse_fibre
 from datasets.loyers import parse_loyers
@@ -39,8 +40,16 @@ DELINQUANCE_SOURCE = "https://static.data.gouv.fr/resources/bases-statistiques-c
 
 PRESIDENTIELLE_SOURCE = "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/20220414-152356/resultats-par-niveau-dpt-t1-france-entiere.txt"
 
+LEGISLATIVES_SOURCE = "https://static.data.gouv.fr/resources/elections-legislatives-des-30-juin-et-7-juillet-2024-resultats-definitifs-du-1er-tour/20240710-171330/resultats-definitifs-par-departements.csv"
+
 IMMOBILIER_SOURCES = [
-    f"https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2024/20250707-085855/communesdvf2024.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2021/20240418-112250/dvf2018.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2021/20240418-112250/dvf2019.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2021/20240418-112251/dvf2020.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2021/20240418-112251/dvf2021.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2021/20240418-112252/dvf2022.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2021/20240418-112252/dvf2023.csv",
+    "https://static.data.gouv.fr/resources/indicateurs-immobiliers-par-commune-et-par-annee-prix-et-volumes-sur-la-periode-2014-2024/20250707-085855/communesdvf2024.csv",
 ]
 
 ACCIDENTS_SOURCE = "https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2024/20251021-115900/caract-2024.csv"
@@ -137,6 +146,21 @@ def run_presidentielle():
         resp.raise_for_status()
         text = resp.content.decode("cp1252")
         rows = parse_presidentielle_raw(text, "presidentielle-2022-t1", "2022-04-10")
+        upsert_elections(conn, rows)
+        print(f"  → {len(rows)} rows")
+    finally:
+        conn.close()
+
+
+def run_legislatives():
+    conn = get_connection()
+    try:
+        print("Ingesting legislatives 2024 T1 (departements)...")
+        print(f"  Downloading {LEGISLATIVES_SOURCE}")
+        resp = requests.get(LEGISLATIVES_SOURCE)
+        resp.raise_for_status()
+        text = resp.content.decode("utf-8")
+        rows = parse_legislatives_raw(text, "legislatives-2024-t1", "2024-06-30")
         upsert_elections(conn, rows)
         print(f"  → {len(rows)} rows")
     finally:
@@ -295,6 +319,7 @@ if __name__ == "__main__":
     if target in ("energie", "all"): run_energie()
     if target in ("delinquance", "all"): run_delinquance()
     if target in ("presidentielle", "all"): run_presidentielle()
+    if target in ("legislatives", "all"): run_legislatives()
     if target in ("immobilier", "all"): run_immobilier()
     if target in ("accidents", "all"): run_accidents()
     if target in ("fibre", "all"): run_fibre()
