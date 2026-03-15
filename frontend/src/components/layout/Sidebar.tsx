@@ -19,24 +19,34 @@ const THEMES = [
   { path: '/politique', label: 'Politique', color: '#4338ca' },
 ]
 
-export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => void; onClose?: () => void }) {
   return (
     <aside className="w-60 bg-[#0a0a1a] text-white flex flex-col shrink-0 min-h-screen relative overflow-hidden">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#000091]/20 via-transparent to-[#0a0a1a] pointer-events-none" />
 
       {/* Logo / Title */}
-      <div className="relative px-5 py-6 border-b border-white/8">
+      <div className="relative px-5 py-5 border-b border-white/8">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#000091] to-[#6a6af4] flex items-center justify-center text-xs font-bold shadow-lg shadow-blue-500/20">
             🇫🇷
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-sm font-bold tracking-wider" style={{ fontFamily: 'var(--font-display)' }}>
               ÉTAT DE LA FRANCE
             </h1>
             <p className="text-[9px] text-white/30 tracking-wide mt-0.5">PORTAIL CITOYEN</p>
           </div>
+          {/* Close button — mobile only */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/60 hover:text-white transition"
+              aria-label="Fermer"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
