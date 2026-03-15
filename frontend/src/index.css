@@ -1,1 +1,93 @@
 @import "tailwindcss";
+
+:root {
+  /* République palette */
+  --bleu-france: #000091;
+  --bleu-clair: #6a6af4;
+  --rouge-marianne: #e1000f;
+  --or: #c9992d;
+
+  /* Thematic accents */
+  --elections: #1a2a5e;
+  --economie: #0d6938;
+  --securite: #b91c1c;
+  --energie: #d97706;
+  --sante: #db2777;
+  --education: #7c3aed;
+  --transport: #ea580c;
+  --numerique: #0891b2;
+  --environnement: #4d7c0f;
+  --politique: #4338ca;
+
+  /* Surfaces */
+  --surface-primary: #fafaf8;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.04);
+  --shadow-glow: 0 0 0 1px rgba(0,0,145,0.05), 0 4px 20px rgba(0,0,145,0.08);
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--surface-primary);
+  color: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display headings — serif for authority */
+h1, h2, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Smooth page transitions */
+main {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, var(--bleu-france) 0%, var(--bleu-clair) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Noise texture overlay for depth */
+.surface-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c4c4c4; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #999; }
