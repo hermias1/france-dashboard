@@ -132,16 +132,31 @@ async def get_departement_profile(code: str):
             icone="📡",
         ))
 
-    # 6. Accidents
+    # 6. Accidents (per 100K inhabitants using population from delinquance)
     acc = await pool.fetchrow(
-        "SELECT nb_accidents as val FROM accidents WHERE code_departement = $1 AND annee = 2024", code)
+        """SELECT a.nb_accidents, d.population,
+                  CASE WHEN d.population > 0
+                    THEN ROUND(a.nb_accidents::numeric / d.population * 100000, 1)
+                    ELSE NULL END as taux
+           FROM accidents a
+           LEFT JOIN (SELECT DISTINCT ON (code_departement) code_departement, population
+                      FROM delinquance WHERE annee = 2024 ORDER BY code_departement) d
+           ON a.code_departement = d.code_departement
+           WHERE a.code_departement = $1 AND a.annee = 2024""", code)
     acc_nat = await pool.fetchval(
-        "SELECT AVG(nb_accidents) FROM accidents WHERE annee = 2024")
-    if acc and acc["val"] and acc_nat:
-        ecart = round((acc["val"] - acc_nat) / acc_nat * 100, 1)
+        """SELECT ROUND(AVG(sub.taux)::numeric, 1) FROM (
+             SELECT a.nb_accidents::numeric / NULLIF(d.population, 0) * 100000 as taux
+             FROM accidents a
+             LEFT JOIN (SELECT DISTINCT ON (code_departement) code_departement, population
+                        FROM delinquance WHERE annee = 2024 ORDER BY code_departement) d
+             ON a.code_departement = d.code_departement
+             WHERE a.annee = 2024 AND d.population > 0
+           ) sub""")
+    if acc and acc["taux"] and acc_nat:
+        ecart = round((float(acc["taux"]) - float(acc_nat)) / float(acc_nat) * 100, 1)
         indicateurs.append(Indicateur(
             label="Accidents route",
-            valeur=f"{acc['val']:,}".replace(",", " "),
+            valeur=f"{acc['taux']} /100K hab.",
             comparaison=_comp(ecart, inverse=True),
             ecart_pct=ecart,
             icone="🚗",
@@ -163,14 +178,20 @@ async def get_departement_profile(code: str):
             icone="🎓",
         ))
 
-    # Compute normalized scores (0-100, 50=average)
+    # Compute scores using soft sigmoid (0-100, 50=average)
+    import math
     for ind in indicateurs:
         inverse = ind.label in ("Cambriolages", "Accidents route")
-        ecart = ind.ecart_pct
-        if inverse:
-            ecart = -ecart
-        # Map ecart to 0-100: -100% → 0, 0% → 50, +100% → 100
-        ind.score = max(0, min(100, int(50 + ecart * 0.5)))
+        try:
+            ecart = ind.ecart_pct
+            if inverse:
+                ecart = -ecart
+            # Sigmoid with scale 80: ±80% → ~27/73, ±160% → ~12/88
+            # This spreads scores more evenly across the 0-100 range
+            normalized = 1 / (1 + math.exp(-ecart / 80))
+            ind.score = max(5, min(95, int(normalized * 100)))
+        except Exception:
+            ind.score = 50
 
     score_global = int(sum(i.score for i in indicateurs) / len(indicateurs)) if indicateurs else 50
 
