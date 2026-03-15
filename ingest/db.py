@@ -254,3 +254,25 @@ def upsert_brevet(conn, df):
             values,
         )
     conn.commit()
+
+
+def upsert_mix_energetique(conn, df):
+    cols = ["date", "consommation_mw", "nucleaire_mw", "eolien_mw", "solaire_mw",
+            "hydraulique_mw", "gaz_mw", "bioenergies_mw", "fioul_mw", "echanges_mw", "taux_co2"]
+    values = df[cols].values.tolist()
+    with conn.cursor() as cur:
+        execute_values(
+            cur,
+            """INSERT INTO mix_energetique (date, consommation_mw, nucleaire_mw, eolien_mw, solaire_mw,
+                 hydraulique_mw, gaz_mw, bioenergies_mw, fioul_mw, echanges_mw, taux_co2)
+               VALUES %s
+               ON CONFLICT (date) DO UPDATE SET
+                 consommation_mw = EXCLUDED.consommation_mw,
+                 nucleaire_mw = EXCLUDED.nucleaire_mw,
+                 eolien_mw = EXCLUDED.eolien_mw,
+                 solaire_mw = EXCLUDED.solaire_mw,
+                 hydraulique_mw = EXCLUDED.hydraulique_mw,
+                 gaz_mw = EXCLUDED.gaz_mw""",
+            values,
+        )
+    conn.commit()

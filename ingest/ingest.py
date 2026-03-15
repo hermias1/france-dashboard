@@ -6,7 +6,7 @@ from db import (get_connection, upsert_regions, upsert_departements, upsert_elec
                 upsert_energie, upsert_delinquance, upsert_immobilier,
                 upsert_accidents, upsert_fibre, upsert_loyers, upsert_brevet,
                 upsert_apl_medecins, upsert_elus, upsert_chomage,
-                upsert_desinfo_climat)
+                upsert_desinfo_climat, upsert_mix_energetique)
 from datasets.geo import parse_regions, parse_departements
 from datasets.elections import parse_elections_by_region, parse_elections_by_departement
 from datasets.energie import parse_energie
@@ -21,6 +21,7 @@ from datasets.apl_medecins import parse_apl_medecins
 from datasets.elus import parse_deputes, parse_senateurs, parse_maires
 from datasets.chomage import parse_chomage
 from datasets.desinfo_climat import parse_desinfo_climat
+from datasets.mix_energetique import parse_mix_energetique
 
 GEO_SOURCES = {
     "regions": "https://www.insee.fr/fr/statistiques/fichier/8740222/v_region_2026.csv",
@@ -270,34 +271,38 @@ def run_desinfo_climat():
         conn.close()
 
 
+def run_mix_energetique():
+    conn = get_connection()
+    try:
+        print("Ingesting mix énergétique (eco2mix 2024-2025)...")
+        # Get most recent 50K records (~520 days at 96 records/day)
+        url = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-tr/exports/csv?use_labels=true&limit=50000"
+        print(f"  Downloading eco2mix...")
+        resp = requests.get(url, timeout=120)
+        resp.raise_for_status()
+        df = pd.read_csv(io.StringIO(resp.text), sep=";")
+        parsed = parse_mix_energetique(df)
+        upsert_mix_energetique(conn, parsed)
+        print(f"  → {len(parsed)} days")
+    finally:
+        conn.close()
+
+
 if __name__ == "__main__":
     target = sys.argv[1] if len(sys.argv) > 1 else "all"
-    if target in ("geo", "all"):
-        run_geo()
-    if target in ("elections", "all"):
-        run_elections()
-    if target in ("energie", "all"):
-        run_energie()
-    if target in ("delinquance", "all"):
-        run_delinquance()
-    if target in ("presidentielle", "all"):
-        run_presidentielle()
-    if target in ("immobilier", "all"):
-        run_immobilier()
-    if target in ("accidents", "all"):
-        run_accidents()
-    if target in ("fibre", "all"):
-        run_fibre()
-    if target in ("loyers", "all"):
-        run_loyers()
-    if target in ("brevet", "all"):
-        run_brevet()
-    if target in ("apl", "all"):
-        run_apl()
-    if target in ("chomage", "all"):
-        run_chomage()
-    if target in ("desinfo_climat", "all"):
-        run_desinfo_climat()
-    if target in ("elus", "all"):
-        run_elus()
+    if target in ("geo", "all"): run_geo()
+    if target in ("elections", "all"): run_elections()
+    if target in ("energie", "all"): run_energie()
+    if target in ("delinquance", "all"): run_delinquance()
+    if target in ("presidentielle", "all"): run_presidentielle()
+    if target in ("immobilier", "all"): run_immobilier()
+    if target in ("accidents", "all"): run_accidents()
+    if target in ("fibre", "all"): run_fibre()
+    if target in ("loyers", "all"): run_loyers()
+    if target in ("brevet", "all"): run_brevet()
+    if target in ("apl", "all"): run_apl()
+    if target in ("chomage", "all"): run_chomage()
+    if target in ("desinfo_climat", "all"): run_desinfo_climat()
+    if target in ("elus", "all"): run_elus()
+    if target in ("mix", "all"): run_mix_energetique()
     print("Done.")

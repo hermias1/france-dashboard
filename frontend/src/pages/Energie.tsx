@@ -5,10 +5,40 @@ import { useApi } from '../hooks/useApi'
 import type { EnergiePoint } from '../lib/api'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
-  BarChart, Bar,
+  BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
 } from 'recharts'
 
-type View = 'timeline' | 'comparison' | 'seasonal'
+interface MixJour {
+  date: string
+  consommation_mw: number
+  nucleaire_mw: number
+  eolien_mw: number
+  solaire_mw: number
+  hydraulique_mw: number
+  gaz_mw: number
+  bioenergies_mw: number
+  taux_co2: number | null
+}
+
+interface MixMoyen {
+  nucleaire_pct: number
+  eolien_pct: number
+  solaire_pct: number
+  hydraulique_pct: number
+  gaz_pct: number
+  bioenergies_pct: number
+}
+
+const MIX_COLORS = {
+  nucleaire: '#2563eb',
+  eolien: '#06b6d4',
+  solaire: '#f59e0b',
+  hydraulique: '#10b981',
+  gaz: '#ef4444',
+  bioenergies: '#8b5cf6',
+}
+
+type View = 'timeline' | 'comparison' | 'seasonal' | 'mix'
 
 const YEAR_COLORS = ['#2563eb', '#dc2626', '#f59e0b', '#10b981', '#8b5cf6']
 
@@ -19,6 +49,8 @@ export default function Energie() {
     'energie-full',
     '/energie/consommation?date_min=2013-01-01&date_max=2025-12-31'
   )
+  const { data: mixData } = useApi<MixJour[]>('mix', '/energie/mix')
+  const { data: mixMoyen } = useApi<MixMoyen>('mix-moyen', '/energie/mix/moyenne')
 
   const peak = useMemo(() => {
     if (!data) return null
@@ -117,6 +149,7 @@ export default function Energie() {
           { key: 'timeline', label: '📈 Chronologie' },
           { key: 'comparison', label: '🔄 Comparer les années' },
           { key: 'seasonal', label: '📊 Saisonnalité' },
+          { key: 'mix', label: '⚛️ Mix énergétique' },
         ] as { key: View; label: string }[]).map(({ key, label }) => (
           <button
             key={key}
@@ -190,6 +223,76 @@ export default function Energie() {
                 <Line yAxisId="temp" type="monotone" dataKey="temperature" stroke="#f59e0b" strokeWidth={2} dot name="Température" />
               </BarChart>
             </ResponsiveContainer>
+          </>
+        )}
+
+        {view === 'mix' && mixData && (
+          <>
+            <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-4">
+              Mix énergétique journalier (production moyenne par source)
+            </h2>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={mixData}>
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)} GW`} />
+                <Tooltip formatter={(v: number, name: string) => [`${(v / 1000).toFixed(1)} GW`, name]} labelFormatter={(d) => new Date(d).toLocaleDateString('fr-FR')} />
+                <Legend />
+                <Area type="monotone" dataKey="nucleaire_mw" stackId="1" fill={MIX_COLORS.nucleaire} stroke={MIX_COLORS.nucleaire} name="Nucléaire" />
+                <Area type="monotone" dataKey="hydraulique_mw" stackId="1" fill={MIX_COLORS.hydraulique} stroke={MIX_COLORS.hydraulique} name="Hydraulique" />
+                <Area type="monotone" dataKey="eolien_mw" stackId="1" fill={MIX_COLORS.eolien} stroke={MIX_COLORS.eolien} name="Éolien" />
+                <Area type="monotone" dataKey="solaire_mw" stackId="1" fill={MIX_COLORS.solaire} stroke={MIX_COLORS.solaire} name="Solaire" />
+                <Area type="monotone" dataKey="gaz_mw" stackId="1" fill={MIX_COLORS.gaz} stroke={MIX_COLORS.gaz} name="Gaz" />
+                <Area type="monotone" dataKey="bioenergies_mw" stackId="1" fill={MIX_COLORS.bioenergies} stroke={MIX_COLORS.bioenergies} name="Bioénergies" />
+              </AreaChart>
+            </ResponsiveContainer>
+
+            {mixMoyen && (
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Répartition moyenne</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Nucléaire', value: mixMoyen.nucleaire_pct },
+                          { name: 'Hydraulique', value: mixMoyen.hydraulique_pct },
+                          { name: 'Éolien', value: mixMoyen.eolien_pct },
+                          { name: 'Solaire', value: mixMoyen.solaire_pct },
+                          { name: 'Gaz', value: mixMoyen.gaz_pct },
+                          { name: 'Bioénergies', value: mixMoyen.bioenergies_pct },
+                        ]}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%" cy="50%"
+                        outerRadius={90}
+                        label={({ name, value }) => `${name} ${value}%`}
+                      >
+                        {Object.values(MIX_COLORS).map((color, i) => (
+                          <Cell key={i} fill={color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => `${v}%`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-col justify-center space-y-2">
+                  {[
+                    { label: 'Nucléaire', pct: mixMoyen.nucleaire_pct, color: MIX_COLORS.nucleaire },
+                    { label: 'Hydraulique', pct: mixMoyen.hydraulique_pct, color: MIX_COLORS.hydraulique },
+                    { label: 'Éolien', pct: mixMoyen.eolien_pct, color: MIX_COLORS.eolien },
+                    { label: 'Solaire', pct: mixMoyen.solaire_pct, color: MIX_COLORS.solaire },
+                    { label: 'Gaz', pct: mixMoyen.gaz_pct, color: MIX_COLORS.gaz },
+                    { label: 'Bioénergies', pct: mixMoyen.bioenergies_pct, color: MIX_COLORS.bioenergies },
+                  ].map(({ label, pct, color }) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-sm" style={{ background: color }} />
+                      <span className="text-sm text-gray-700 flex-1">{label}</span>
+                      <span className="text-sm font-bold text-gray-900">{pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
