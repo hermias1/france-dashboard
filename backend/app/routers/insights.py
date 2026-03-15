@@ -207,13 +207,36 @@ def pearson(x_vals, y_vals):
     return num / (den_x * den_y)
 
 
+LABEL_PHRASES = {
+    "prix_immo": ("le prix immobilier", "un prix immobilier"),
+    "loyer": ("le loyer", "un loyer"),
+    "cambriolages": ("le taux de cambriolages", "un taux de cambriolages"),
+    "violences": ("le taux de violences", "un taux de violences"),
+    "participation": ("la participation électorale", "une participation"),
+    "vote_rn": ("le score du RN", "un score RN"),
+    "fibre": ("la couverture fibre", "une couverture fibre"),
+    "accidents": ("le taux d'accidents", "un taux d'accidents"),
+    "brevet": ("le taux de réussite au brevet", "un taux de réussite"),
+    "medecins": ("l'accès aux médecins", "un accès aux médecins"),
+    "parite_maires": ("la parité des maires", "une parité"),
+    "tendance_cambriolages": ("la hausse des cambriolages", "une hausse des cambriolages"),
+    "densite_pop": ("la densité de population", "une densité"),
+    "age_maires": ("l'âge moyen des maires", "un âge moyen des maires"),
+    "ratio_loyer_achat": ("le ratio loyer/achat", "un ratio loyer/achat"),
+    "tendance_violences": ("la hausse des violences", "une hausse des violences"),
+    "prix_evolution": ("la hausse des prix immobiliers", "une hausse des prix"),
+}
+
+
 def describe_correlation(ind_x, ind_y, r):
     """Generate a human-readable description of a correlation."""
-    strength = "fortement" if abs(r) > 0.7 else "significativement"
+    px = LABEL_PHRASES.get(ind_x['key'], (f"le {ind_x['label'].lower()}", f"un {ind_x['label'].lower()}"))
+    py = LABEL_PHRASES.get(ind_y['key'], (f"le {ind_y['label'].lower()}", f"un {ind_y['label'].lower()}"))
+    strength = "forte" if abs(r) > 0.7 else "significative"
     if r > 0:
-        return f"Plus un département a un {ind_x['label'].lower()} élevé, plus son {ind_y['label'].lower()} est élevé ({strength} corrélés, r={r:.2f})."
+        return f"Les départements où {px[0]} est le plus fort ont aussi {py[1]} plus élevé. Corrélation {strength} (r={r:.2f})."
     else:
-        return f"Plus un département a un {ind_x['label'].lower()} élevé, plus son {ind_y['label'].lower()} est faible (corrélation inverse, r={r:.2f})."
+        return f"Les départements où {px[0]} est le plus fort ont {py[1]} plus faible. Corrélation inverse {strength} (r={r:.2f})."
 
 
 def title_for_correlation(ind_x, ind_y, r):
