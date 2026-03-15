@@ -27,24 +27,43 @@ def parse_french_pct(val):
         return None
 
 
+def _find_col(df, keyword):
+    """Find column containing keyword (case-insensitive)."""
+    for c in df.columns:
+        if keyword.lower() in c.lower():
+            return c
+    return None
+
+
 def parse_precarite(df: pd.DataFrame) -> pd.DataFrame:
     # Filter for departments only
-    col_niveau = "Niveau géographique"
-    df = df[df[col_niveau] == "Département"].copy()
+    col_niveau = _find_col(df, "niveau") or df.columns[1]
+    df = df[df[col_niveau].astype(str).str.lower().str.contains("partement")].copy()
 
     # Extract code_departement from ID: "D1" → "01", "D2A" → "2A"
-    raw_code = df["ID"].astype(str).str[1:]  # strip "D" prefix
+    raw_code = df["ID"].astype(str).str[1:]
     df["code_departement"] = raw_code.apply(lambda c: c.zfill(2) if len(c) <= 2 else c)
 
     result = pd.DataFrame()
     result["code_departement"] = df["code_departement"].values
     result["nom_departement"] = df["NOM"].astype(str).str.strip().values
 
-    result["revenu_median"] = df["Revenu médian (Insee FiLoSoFi 2021)"].apply(parse_french_int).values
-    result["taux_pauvrete"] = df["Taux de pauvreté au seuil de 60% (Insee FiLoSoFi 2021)"].apply(parse_french_pct).values
-    result["taux_rsa"] = df["Part des allocataires du RSA (CAF 2024) parmi les ménages (Insee 2022)"].apply(parse_french_pct).values
-    result["taux_chomage_jeunes"] = df["Part des 15-24 ans actifs au chômage (Insee 2022)"].apply(parse_french_pct).values
-    result["salaire_femmes"] = df["Salaire mensuel net des femmes salariées en EQTP (Insee DADS 2023)"].apply(parse_french_int).values
-    result["salaire_hommes"] = df["Salaire mensuel net des hommes salariés en EQTP (Insee DADS 2023)"].apply(parse_french_int).values
+    col = _find_col(df, "revenu m")
+    result["revenu_median"] = df[col].apply(parse_french_int).values if col else None
+
+    col = _find_col(df, "pauvret")
+    result["taux_pauvrete"] = df[col].apply(parse_french_pct).values if col else None
+
+    col = _find_col(df, "rsa")
+    result["taux_rsa"] = df[col].apply(parse_french_pct).values if col else None
+
+    col = _find_col(df, "15-24")
+    result["taux_chomage_jeunes"] = df[col].apply(parse_french_pct).values if col else None
+
+    col = _find_col(df, "femmes")
+    result["salaire_femmes"] = df[col].apply(parse_french_int).values if col else None
+
+    col = _find_col(df, "hommes")
+    result["salaire_hommes"] = df[col].apply(parse_french_int).values if col else None
 
     return result
