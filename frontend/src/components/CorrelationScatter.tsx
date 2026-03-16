@@ -7,13 +7,18 @@ import type {
   DelinquanceItem, ImmobilierItem, ElectionResult, ParticipationResult,
 } from '../lib/api'
 
-type IndicatorKey = 'immobilier' | 'cambriolages' | 'vote_rn' | 'participation'
+type IndicatorKey = 'immobilier' | 'cambriolages' | 'vote_rn' | 'participation' | 'revenu' | 'pauvrete' | 'fibre' | 'medecins' | 'brevet'
 
 const INDICATOR_OPTIONS: { value: IndicatorKey; label: string }[] = [
   { value: 'immobilier', label: 'Prix immobilier (€/m²)' },
   { value: 'cambriolages', label: 'Cambriolages (‰)' },
   { value: 'vote_rn', label: 'Vote RN (%)' },
   { value: 'participation', label: 'Participation (%)' },
+  { value: 'revenu', label: 'Revenu médian (€)' },
+  { value: 'pauvrete', label: 'Taux de pauvreté (%)' },
+  { value: 'fibre', label: 'Couverture fibre (%)' },
+  { value: 'medecins', label: 'Accès médecins (APL)' },
+  { value: 'brevet', label: 'Réussite brevet (%)' },
 ]
 
 function pearson(points: { x: number; y: number }[]): number {
@@ -45,13 +50,24 @@ export default function CorrelationScatter() {
   const { data: partData } = useApi<ParticipationResult[]>(
     'scatter-participation', '/elections/participation?scrutin=europeennes-2024&niveau=departement',
   )
+  const { data: precData } = useApi<{ code_departement: string; nom_departement: string; revenu_median: number; taux_pauvrete: number }[]>(
+    'scatter-precarite', '/precarite/departements',
+  )
+  const { data: fibreData } = useApi<{ code_departement: string; nom_departement: string; taux_couverture_moyen: number }[]>(
+    'scatter-fibre', '/fibre/departements',
+  )
+  const { data: medData } = useApi<{ code_departement: string; nom_departement: string; apl_moyen: number }[]>(
+    'scatter-medecins', '/sante/medecins',
+  )
+  const { data: brevData } = useApi<{ code_departement: string; nom_departement: string; taux_reussite: number }[]>(
+    'scatter-brevet', '/education/brevet',
+  )
 
   const datasets = useMemo(() => {
     const maps: Record<IndicatorKey, Map<string, { name: string; value: number }>> = {
-      immobilier: new Map(),
-      cambriolages: new Map(),
-      vote_rn: new Map(),
-      participation: new Map(),
+      immobilier: new Map(), cambriolages: new Map(), vote_rn: new Map(),
+      participation: new Map(), revenu: new Map(), pauvrete: new Map(),
+      fibre: new Map(), medecins: new Map(), brevet: new Map(),
     }
 
     immoData?.forEach(d =>
@@ -65,6 +81,19 @@ export default function CorrelationScatter() {
     )
     partData?.forEach(d =>
       maps.participation.set(d.code_geo, { name: d.libelle_geo, value: d.taux_participation }),
+    )
+    precData?.forEach(d => {
+      if (d.revenu_median) maps.revenu.set(d.code_departement, { name: d.nom_departement, value: d.revenu_median })
+      if (d.taux_pauvrete) maps.pauvrete.set(d.code_departement, { name: d.nom_departement, value: d.taux_pauvrete })
+    })
+    fibreData?.forEach(d =>
+      maps.fibre.set(d.code_departement, { name: d.nom_departement, value: d.taux_couverture_moyen }),
+    )
+    medData?.forEach(d =>
+      maps.medecins.set(d.code_departement, { name: d.nom_departement, value: d.apl_moyen }),
+    )
+    brevData?.forEach(d =>
+      maps.brevet.set(d.code_departement, { name: d.nom_departement, value: d.taux_reussite }),
     )
 
     return maps

@@ -178,10 +178,38 @@ async def get_departement_profile(code: str):
             icone="🎓",
         ))
 
+    # 8. Revenu médian
+    rev = await pool.fetchrow(
+        "SELECT revenu_median as val FROM precarite WHERE code_departement = $1", code)
+    rev_nat = await pool.fetchval("SELECT AVG(revenu_median) FROM precarite WHERE revenu_median IS NOT NULL")
+    if rev and rev["val"] and rev_nat:
+        ecart = round((rev["val"] - rev_nat) / rev_nat * 100, 1)
+        indicateurs.append(Indicateur(
+            label="Revenu médian",
+            valeur=f"{rev['val']:,} €/an".replace(",", " "),
+            comparaison=_comp(ecart),
+            ecart_pct=ecart,
+            icone="💰",
+        ))
+
+    # 9. Taux de pauvreté
+    pauv = await pool.fetchrow(
+        "SELECT taux_pauvrete as val FROM precarite WHERE code_departement = $1", code)
+    pauv_nat = await pool.fetchval("SELECT AVG(taux_pauvrete) FROM precarite WHERE taux_pauvrete IS NOT NULL")
+    if pauv and pauv["val"] and pauv_nat:
+        ecart = round((pauv["val"] - pauv_nat) / pauv_nat * 100, 1)
+        indicateurs.append(Indicateur(
+            label="Taux de pauvreté",
+            valeur=f"{pauv['val']:.0f}%",
+            comparaison=_comp(ecart, inverse=True),
+            ecart_pct=ecart,
+            icone="📉",
+        ))
+
     # Compute scores using soft sigmoid (0-100, 50=average)
     import math
     for ind in indicateurs:
-        inverse = ind.label in ("Cambriolages", "Accidents route")
+        inverse = ind.label in ("Cambriolages", "Accidents route", "Taux de pauvreté")
         try:
             ecart = ind.ecart_pct
             if inverse:
