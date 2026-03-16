@@ -98,9 +98,11 @@ export default function NLQPanel() {
 
         <div className="flex-1 overflow-y-auto p-3">
           {loading && (
-            <div className="flex flex-col items-center gap-2 py-8 text-gray-400 text-sm">
-              <span className="inline-block w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-              Analyse en cours...
+            <div className="flex flex-col gap-2 py-4 text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                <span>Classification de la question...</span>
+              </div>
             </div>
           )}
 
@@ -120,14 +122,30 @@ export default function NLQPanel() {
 
               {result.chart && <DynamicChart spec={result.chart} />}
 
-              <details className="text-[10px] text-gray-400">
-                <summary className="cursor-pointer">
-                  SQL ({result.steps.length} requête{result.steps.length > 1 ? 's' : ''})
-                </summary>
-                {result.steps.map((s, i) => (
-                  <pre key={i} className="mt-1 bg-gray-50 rounded p-2 overflow-x-auto text-[10px]">{s.sql}</pre>
-                ))}
-              </details>
+              {/* Steps indicator */}
+              <div className="space-y-1.5">
+                {result.steps.map((s, i) => {
+                  const isClassification = s.sql.startsWith('[Classification')
+                  const category = isClassification ? s.sql.match(/: (\w+)/)?.[1] : null
+                  return (
+                    <div key={i} className="flex items-start gap-1.5 text-[10px]">
+                      <span className={`mt-0.5 w-3 h-3 rounded-full shrink-0 flex items-center justify-center text-white text-[7px] ${s.error ? 'bg-red-400' : 'bg-green-400'}`}>✓</span>
+                      {isClassification ? (
+                        <span className="text-gray-500">
+                          Question classée : <strong className={category === 'general' ? 'text-amber-600' : 'text-blue-600'}>{category === 'general' ? 'culture générale' : 'données'}</strong>
+                        </span>
+                      ) : (
+                        <details className="text-gray-400 w-full">
+                          <summary className="cursor-pointer text-gray-500">
+                            {s.error ? '❌ Requête échouée' : `✅ SQL — ${(s.results?.length ?? 0)} résultat${(s.results?.length ?? 0) > 1 ? 's' : ''}`}
+                          </summary>
+                          <pre className="mt-1 bg-gray-50 rounded p-2 overflow-x-auto text-[10px]">{s.sql}</pre>
+                        </details>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -139,6 +157,7 @@ export default function NLQPanel() {
                   "Top 5 départements les plus chers ?",
                   "Évolution des cambriolages depuis 2016",
                   "Quel lien entre prix immobilier et vote RN ?",
+                  "C'est quoi la Ve République ?",
                 ].map(s => (
                   <button
                     key={s}

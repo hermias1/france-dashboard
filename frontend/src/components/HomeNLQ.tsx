@@ -12,9 +12,15 @@ interface ChartSpec {
   colors?: string[]
 }
 
+interface AgentStep {
+  sql: string
+  results?: Record<string, unknown>[]
+  error?: string | null
+}
+
 interface AgentResult {
   question: string
-  steps: { sql: string }[]
+  steps: AgentStep[]
   answer: string
   chart?: ChartSpec | null
 }
@@ -23,7 +29,9 @@ const SUGGESTIONS = [
   "Top 5 départements les plus sûrs",
   "Quel lien entre loyers et vote RN ?",
   "Où les maires sont les plus jeunes ?",
+  "C'est quoi le RN ?",
   "Record de consommation électrique",
+  "Pourquoi l'immobilier est cher à Paris ?",
 ]
 
 export default function HomeNLQ() {
@@ -95,12 +103,31 @@ export default function HomeNLQ() {
       {loading && (
         <div className="flex items-center gap-2 py-4 justify-center text-gray-400 text-sm">
           <span className="inline-block w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-          L'agent analyse...
+          Classification de la question...
         </div>
       )}
 
       {result && (
         <div className="mt-4 space-y-3">
+          {/* Steps */}
+          <div className="flex flex-wrap gap-2 text-[11px]">
+            {result.steps.map((s, i) => {
+              const isClassification = s.sql.startsWith('[Classification')
+              const category = isClassification ? s.sql.match(/: (\w+)/)?.[1] : null
+              return (
+                <span key={i} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${
+                  s.error ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'
+                }`}>
+                  {isClassification ? (
+                    <>{category === 'general' ? '💡 Culture générale' : '📊 Données SQL'}</>
+                  ) : (
+                    <>{s.error ? '❌ Erreur SQL' : `✅ ${s.results?.length ?? 0} résultat${(s.results?.length ?? 0) > 1 ? 's' : ''}`}</>
+                  )}
+                </span>
+              )
+            })}
+          </div>
+
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
             <div className="prose prose-sm max-w-none text-gray-800 text-sm [&>p]:mb-1">
               <Markdown>{result.answer}</Markdown>
