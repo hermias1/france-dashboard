@@ -4,6 +4,8 @@
 
 Explorez les élections, l'économie, la sécurité, l'énergie, la santé, l'éducation — croisez les indicateurs, comparez les départements, posez vos questions en langage naturel.
 
+![France Dashboard Demo](docs/screenshots/france-dashboard-demo.gif)
+
 ## Fonctionnalités
 
 - **10 thématiques** : Élections, Économie, Sécurité, Énergie, Santé, Éducation, Transport, Numérique, Environnement, Politique
