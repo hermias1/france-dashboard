@@ -16,9 +16,9 @@ app = FastAPI(title="État de la France", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://francedashboard.fr"],
     allow_methods=["GET"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 app.include_router(elections.router)
