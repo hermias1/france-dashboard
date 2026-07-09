@@ -2,12 +2,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db import get_pool, close_pool
+from app.health import router as health_router, register_check, check_asyncpg_lazy
 from app.routers import elections, energie, geo, question, delinquance, immobilier, accidents, fibre, loyers, brevet_router, territoire, sante, chomage, environnement, politique, mix_energie, insights, precarite
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await get_pool()
+    register_check("postgres", check_asyncpg_lazy(get_pool))
     yield
     await close_pool()
 
@@ -39,10 +41,5 @@ app.include_router(politique.router)
 app.include_router(mix_energie.router)
 app.include_router(insights.router)
 app.include_router(precarite.router)
-
-
-@app.get("/api/health")
-async def health():
-    pool = await get_pool()
-    row = await pool.fetchval("SELECT 1")
-    return {"status": "ok", "db": row == 1}
+# Health endpoints under /api prefix to match existing k8s probe paths.
+app.include_router(health_router, prefix="/api")
